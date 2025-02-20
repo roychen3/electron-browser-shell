@@ -1,9 +1,13 @@
 {
   "name": "specialized-browser",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main/index.js",
+  "workspaces": [
+    "src/ui/browser-shell"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:browser-shell": "npm run dev --workspace=src/ui/browser-shell"
   },
   "author": "Roy Chen",
   "license": "MIT",
