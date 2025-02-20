@@ -1,13 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoArrowBack, IoArrowForward, IoReload } from 'react-icons/io5';
 
 function App() {
   const [url, setUrl] = useState('');
 
-  const handleUrlSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Get initial URL
+    window.electronAPI.getCurrentUrl().then(setUrl);
+
+    // Subscribe to URL updates
+    window.electronAPI.onUrlUpdate(setUrl);
+  }, []);
+
+  const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle URL navigation here
-    console.log('Navigate to:', url);
+    try {
+      // Ensure URL has protocol
+      const urlToNavigate = url.startsWith('http') ? url : `https://${url}`;
+      const result = await window.electronAPI.navigateUrl(urlToNavigate);
+      if (!result.success) {
+        console.error('Navigation failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   };
 
   return (
@@ -17,19 +33,19 @@ function App() {
           {/* Navigation buttons */}
           <button 
             className="p-2 rounded-full hover:bg-neutral-600 text-white"
-            onClick={() => console.log('Back')}
+            onClick={() => window.electronAPI.browserBack()}
           >
             <IoArrowBack size={20} />
           </button>
           <button 
             className="p-2 rounded-full hover:bg-neutral-600 text-white"
-            onClick={() => console.log('Forward')}
+            onClick={() => window.electronAPI.browserForward()}
           >
             <IoArrowForward size={20} />
           </button>
           <button 
             className="p-2 rounded-full hover:bg-neutral-600 text-white"
-            onClick={() => console.log('Reload')}
+            onClick={() => window.electronAPI.browserReload()}
           >
             <IoReload size={20} />
           </button>

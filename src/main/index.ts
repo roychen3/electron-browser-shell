@@ -2,6 +2,7 @@ import { app, BrowserWindow, WebContentsView } from 'electron';
 import { BROWSER_SHELL_DEV_URL, AUTHENTICATOR_DEV_URL } from './constants';
 import path from 'path';
 import { createApplicationMenu } from './menu';
+import { setupAppRouterIPC } from './ipc';
 
 
 function createWindow(): void {
@@ -18,22 +19,38 @@ function createWindow(): void {
   // Create browser shell view
   const browserShellView = new WebContentsView({
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
   // Create browser content view
   const browserContentView = new WebContentsView({
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
   // Add views to the window
   win.contentView.addChildView(browserShellView);
   win.contentView.addChildView(browserContentView);
+
+  // Setup IPC handlers
+  setupAppRouterIPC(browserContentView);
+
+  // Subscribe to browser content view's navigation events
+  browserContentView.webContents.on('did-navigate', () => {
+    const currentUrl = browserContentView.webContents.getURL();
+    browserShellView.webContents.send('update-url', currentUrl);
+  });
+
+  browserContentView.webContents.on('did-navigate-in-page', () => {
+    const currentUrl = browserContentView.webContents.getURL();
+    browserShellView.webContents.send('update-url', currentUrl);
+  });
 
   // Function to update view bounds
   const shellHeight = 56; // Height of the shell UI
