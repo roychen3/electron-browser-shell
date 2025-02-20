@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "main": "dist/src/main/index.js",
   "workspaces": [
-    "src/ui/browser-shell"
+    "src/ui/browser-shell",
+    "src/ui/authenticator"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:browser-shell": "npm run dev --workspace=src/ui/browser-shell",
     "build:browser-shell": "npm run build --workspace=src/ui/browser-shell",
+    "dev:authenticator": "npm run dev --workspace=src/ui/authenticator",
+    "build:authenticator": "npm run build --workspace=src/ui/authenticator",
     "watch:electron": "tsc -w",
     "build:electron": "tsc",
     "dev:electron": "npm run build:electron && electron-forge start",
