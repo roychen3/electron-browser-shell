@@ -11,24 +11,24 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="p-2 bg-white shadow">
+    <div className="h-full bg-gray-100">
+      <div className="p-2 bg-neutral-700">
         <div className="flex items-center gap-2">
           {/* Navigation buttons */}
           <button 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+            className="p-2 rounded-full hover:bg-neutral-600 text-white"
             onClick={() => console.log('Back')}
           >
             <IoArrowBack size={20} />
           </button>
           <button 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+            className="p-2 rounded-full hover:bg-neutral-600 text-white"
             onClick={() => console.log('Forward')}
           >
             <IoArrowForward size={20} />
           </button>
           <button 
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+            className="p-2 rounded-full hover:bg-neutral-600 text-white"
             onClick={() => console.log('Reload')}
           >
             <IoReload size={20} />
@@ -41,15 +41,10 @@ function App() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Search Google or type a URL"
-              className="w-full px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="w-full px-4 py-2 bg-neutral-800 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-neutral-700"
             />
           </form>
         </div>
-      </div>
-
-      {/* Content area */}
-      <div className="p-4">
-        {/* Browser content will go here */}
       </div>
     </div>
   );
