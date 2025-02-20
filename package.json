@@ -1,15 +1,32 @@
 {
   "name": "specialized-browser",
   "version": "1.0.0",
-  "main": "main/index.js",
+  "main": "src/main/index.js",
   "workspaces": [
     "src/ui/browser-shell"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:browser-shell": "npm run dev --workspace=src/ui/browser-shell"
+    "dev:browser-shell": "npm run dev --workspace=src/ui/browser-shell",
+    "dev:electron": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "author": "Roy Chen",
   "license": "MIT",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.7.0",
+    "@electron-forge/maker-deb": "^7.7.0",
+    "@electron-forge/maker-rpm": "^7.7.0",
+    "@electron-forge/maker-squirrel": "^7.7.0",
+    "@electron-forge/maker-zip": "^7.7.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.7.0",
+    "@electron-forge/plugin-fuses": "^7.7.0",
+    "@electron/fuses": "^1.8.0",
+    "electron": "^34.2.0"
+  }
 }
