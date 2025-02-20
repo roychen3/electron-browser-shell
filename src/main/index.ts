@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { BROWSER_SHELL_DEV_URL} from './constants'
+import path from 'path'
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -11,7 +12,11 @@ function createWindow(): void {
     }
   });
 
-  win.loadURL(BROWSER_SHELL_DEV_URL);
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '../../src/ui/browser-shell/index.html'));
+  } else {
+    win.loadURL(BROWSER_SHELL_DEV_URL);
+  }
 }
 
 app.whenReady().then(() => {
