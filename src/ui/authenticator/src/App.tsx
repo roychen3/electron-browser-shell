@@ -1,9 +1,7 @@
+import { SignIn } from './pages/SignIn'
+
 function App() {
-  return (
-    <>
-      <h1>Authenticator</h1>
-    </>
-  )
+  return <SignIn />
 }
 
 export default App
