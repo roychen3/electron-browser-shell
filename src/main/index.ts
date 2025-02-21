@@ -4,25 +4,6 @@ import path from 'path';
 import { createApplicationMenu } from './menu';
 import { setupAppRouterIPC } from './ipc';
 
-const createGetBrowserContentView = () => {
-  let view: WebContentsView | null = null;
-  const getView = () => {
-    if (view) return view
-  
-    view = new WebContentsView({
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js')
-      }
-    });
-    return view
-  }
-
-  return getView
-}
-const getBrowserContentView = createGetBrowserContentView()
-
 function createWindow(): void {
   // Create the main window
   const win = new BrowserWindow({
@@ -44,8 +25,16 @@ function createWindow(): void {
   });
 
   // Create browser content view
-  const browserContentView = getBrowserContentView()
+  const browserContentView =  new WebContentsView({
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
 
+  // Setup IPC handlers
+  setupAppRouterIPC(browserContentView);
 
   // Add views to the window
   win.contentView.addChildView(browserShellView);
@@ -55,11 +44,13 @@ function createWindow(): void {
   browserContentView.webContents.on('did-navigate', () => {
     const currentUrl = browserContentView.webContents.getURL();
     browserShellView.webContents.send('update-url', currentUrl);
+    browserContentView.webContents.send('update-url', currentUrl);
   });
 
   browserContentView.webContents.on('did-navigate-in-page', () => {
     const currentUrl = browserContentView.webContents.getURL();
     browserShellView.webContents.send('update-url', currentUrl);
+    browserContentView.webContents.send('update-url', currentUrl);
   });
 
   // Function to update view bounds
@@ -103,9 +94,6 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  // Setup IPC handlers
-  setupAppRouterIPC(getBrowserContentView());
-
   createWindow();
 
   app.on('activate', () => {

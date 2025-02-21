@@ -6,10 +6,18 @@ function App() {
 
   useEffect(() => {
     // Get initial URL
-    window.electronAPI.getCurrentUrl().then(setUrl);
+    window.electronAPI.getCurrentUrl().then((url)=>{
+      setUrl(url);
+    });
 
     // Subscribe to URL updates
-    window.electronAPI.onUrlUpdate(setUrl);
+    const destroyOnUrlUpdate = window.electronAPI.onUrlUpdate((url)=>{
+      setUrl(url);
+    });
+
+    return () => {
+      destroyOnUrlUpdate()
+    }
   }, []);
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
