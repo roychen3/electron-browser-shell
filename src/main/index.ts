@@ -4,6 +4,24 @@ import path from 'path';
 import { createApplicationMenu } from './menu';
 import { setupAppRouterIPC } from './ipc';
 
+const createGetBrowserContentView = () => {
+  let view: WebContentsView | null = null;
+  const getView = () => {
+    if (view) return view
+  
+    view = new WebContentsView({
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
+      }
+    });
+    return view
+  }
+
+  return getView
+}
+const getBrowserContentView = createGetBrowserContentView()
 
 function createWindow(): void {
   // Create the main window
@@ -26,20 +44,12 @@ function createWindow(): void {
   });
 
   // Create browser content view
-  const browserContentView = new WebContentsView({
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
+  const browserContentView = getBrowserContentView()
+
 
   // Add views to the window
   win.contentView.addChildView(browserShellView);
   win.contentView.addChildView(browserContentView);
-
-  // Setup IPC handlers
-  setupAppRouterIPC(browserContentView);
 
   // Subscribe to browser content view's navigation events
   browserContentView.webContents.on('did-navigate', () => {
@@ -81,8 +91,8 @@ function createWindow(): void {
 
   // Load content into views
   if (app.isPackaged) {
-    browserShellView.webContents.loadFile(path.join(__dirname, '../../src/ui/browser-shell/index.html'));
-    browserContentView.webContents.loadFile(path.join(__dirname, '../../src/ui/authenticator/index.html'));
+    browserShellView.webContents.loadFile(path.join(__dirname, '../ui/browser-shell/index.html'));
+    browserContentView.webContents.loadFile(path.join(__dirname, '../ui/authenticator/index.html'));
   } else {
     browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
     browserContentView.webContents.loadURL(AUTHENTICATOR_DEV_URL);
@@ -93,6 +103,9 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Setup IPC handlers
+  setupAppRouterIPC(getBrowserContentView());
+
   createWindow();
 
   app.on('activate', () => {
