@@ -8,17 +8,16 @@ import {
 
 const router = createBrowserRouter([
   {
-    path: "/",
     children: [
       {
-        path: "sign-in",
+        path: "/sign-in",
         element: <SignIn />,
       },
-      {
-        path: "*",
-        element: <PageNotFound />,
-      },
     ],
+  },
+  {
+    path: "*",
+    element: <PageNotFound />,
   },
 ]);
 
