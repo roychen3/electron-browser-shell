@@ -16,7 +16,13 @@ function App() {
     e.preventDefault();
     try {
       // Ensure URL has protocol
-      const urlToNavigate = url.startsWith('http') ? url : `https://${url}`;
+      const formattedUrl = (str: string) => {
+        if (str.startsWith('http')) return str;
+        if (str.startsWith('file')) return str;
+        return `https://${str}`;
+
+      }
+      const urlToNavigate = formattedUrl(url)
       const result = await window.electronAPI.navigateUrl(urlToNavigate);
       if (!result.success) {
         console.error('Navigation failed:', result.error);
