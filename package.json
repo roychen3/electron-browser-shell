@@ -17,7 +17,7 @@
     "dev:electron": "npm run build:electron && electron-forge start",
     "dev:electron:watch": "npm run watch:electron & nodemon --exec electron-forge start",
     "package": "npm run build && electron-forge package",
-    "make": "npm run build:browser-shell && npm run build:electron && electron-forge make"
+    "make": "npm run build:browser-shell && npm run build:authenticator && npm run build:electron && electron-forge make"
   },
   "author": "Roy Chen",
   "license": "MIT",
