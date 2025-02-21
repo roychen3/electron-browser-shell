@@ -99,7 +99,7 @@ function createWindow(): void {
   }
 
   // Set up application menu
-  createApplicationMenu(browserContentView);
+  createApplicationMenu(browserContentView, browserShellView);
 }
 
 app.whenReady().then(() => {
