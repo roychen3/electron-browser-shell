@@ -3,6 +3,8 @@ import { BROWSER_SHELL_DEV_URL, AUTHENTICATOR_DEV_URL } from './constants';
 import path from 'path';
 import { createApplicationMenu } from './menu';
 import { setupAppRouterIPC } from './ipc';
+import { getAuthenticatorPath, getBrowserShellPath } from './pathResolver';
+import { authenticatorRouter } from './AuthenticatorRouterManager'
 
 function createWindow(): void {
   // Create the main window
@@ -25,13 +27,14 @@ function createWindow(): void {
   });
 
   // Create browser content view
-  const browserContentView =  new WebContentsView({
+  const browserContentView = new WebContentsView({
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     }
   });
+  authenticatorRouter.setWevContentsView(browserContentView)
 
   // Setup IPC handlers
   setupAppRouterIPC(browserContentView);
@@ -40,17 +43,30 @@ function createWindow(): void {
   win.contentView.addChildView(browserShellView);
   win.contentView.addChildView(browserContentView);
 
+  const updateUrl = () => {
+    authenticatorRouter.url = browserContentView.webContents.getURL()
+    console.log('url:', authenticatorRouter.url)
+    console.log('loadUrl:', authenticatorRouter.loadUrl)
+    if (authenticatorRouter.url) {
+      const formattedUrl = authenticatorRouter.url
+      browserShellView.webContents.send('update-url', formattedUrl);
+      browserContentView.webContents.send('update-url', formattedUrl);
+    } else {
+      const currentUrl = browserContentView.webContents.getURL()
+      browserShellView.webContents.send('update-url', currentUrl);
+      browserContentView.webContents.send('update-url', currentUrl);
+    }
+  }
+
   // Subscribe to browser content view's navigation events
   browserContentView.webContents.on('did-navigate', () => {
-    const currentUrl = browserContentView.webContents.getURL();
-    browserShellView.webContents.send('update-url', currentUrl);
-    browserContentView.webContents.send('update-url', currentUrl);
+    console.log('------ did-navigate ------')
+    updateUrl();
   });
 
   browserContentView.webContents.on('did-navigate-in-page', () => {
-    const currentUrl = browserContentView.webContents.getURL();
-    browserShellView.webContents.send('update-url', currentUrl);
-    browserContentView.webContents.send('update-url', currentUrl);
+    console.log('------ did-navigate-in-page ------')
+    updateUrl();
   });
 
   // Function to update view bounds
@@ -82,12 +98,13 @@ function createWindow(): void {
 
   // Load content into views
   if (app.isPackaged) {
-    browserShellView.webContents.loadFile(path.join(__dirname, '../ui/browser-shell/index.html'));
-    browserContentView.webContents.loadFile(path.join(__dirname, '../ui/authenticator/index.html'));
+    browserShellView.webContents.loadFile(getBrowserShellPath());
+    // browserContentView.webContents.loadFile(getAuthenticatorPath());
   } else {
     browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
-    browserContentView.webContents.loadURL(AUTHENTICATOR_DEV_URL);
+    // browserContentView.webContents.loadURL(AUTHENTICATOR_DEV_URL);
   }
+  browserContentView.webContents.loadFile(getAuthenticatorPath());
 
   // Set up application menu
   createApplicationMenu(browserContentView, browserShellView);

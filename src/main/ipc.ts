@@ -1,5 +1,8 @@
 import { ipcMain } from 'electron';
 import { WebContentsView } from 'electron';
+import { getAuthenticatorPath } from './pathResolver';
+import { authenticatorRouter } from './AuthenticatorRouterManager'
+
 
 export function setupAppRouterIPC(browserContentView: WebContentsView) {
 
@@ -7,7 +10,17 @@ export function setupAppRouterIPC(browserContentView: WebContentsView) {
   ipcMain.removeHandler('navigate-url')
   ipcMain.handle('navigate-url', async (_, url: string) => {
     try {
-      await browserContentView.webContents.loadURL(url);
+      console.log('------ handle navigate-url ------')
+      console.log('url:', url)
+      authenticatorRouter.url = url
+      console.log('url:', authenticatorRouter.url)
+      console.log('loadUrl:', authenticatorRouter.loadUrl)
+      if (authenticatorRouter.loadUrl) {
+        // Note! this using `loadURL` not `loadFile`.
+        await browserContentView.webContents.loadURL(authenticatorRouter.loadUrl)
+      } else {
+        await browserContentView.webContents.loadURL(url);
+      }
       return { success: true };
     } catch (error) {
       console.error('Navigation error:', error);
@@ -15,6 +28,19 @@ export function setupAppRouterIPC(browserContentView: WebContentsView) {
         return { success: false, error: error.message };
       }
       return { success: false, error: 'Navigation error' };
+    }
+  });
+
+  // Get current URL
+  ipcMain.removeHandler('get-current-url')
+  ipcMain.handle('get-current-url', () => {
+    console.log('------ handle get-current-url ------')
+    console.log('url:', authenticatorRouter.url)
+    console.log('loadUrl:', authenticatorRouter.loadUrl)
+    if (authenticatorRouter.url) {
+      return authenticatorRouter.url
+    } else {
+      return browserContentView.webContents.getURL();
     }
   });
 
@@ -40,13 +66,11 @@ export function setupAppRouterIPC(browserContentView: WebContentsView) {
 
   ipcMain.removeHandler('browser-reload')
   ipcMain.handle('browser-reload', () => {
+    if (authenticatorRouter.loadUrl) {
+      browserContentView.webContents.loadURL(authenticatorRouter.loadUrl);
+      return true
+    }
     browserContentView.webContents.reload();
     return true;
-  });
-
-  // Get current URL
-  ipcMain.removeHandler('get-current-url')
-  ipcMain.handle('get-current-url', () => {
-    return browserContentView.webContents.getURL();
   });
 }
