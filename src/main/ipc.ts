@@ -8,6 +8,7 @@ export function setupAppRouterIPC(browserContentView: WebContentsView) {
   ipcMain.removeHandler('navigate-url');
   ipcMain.handle('navigate-url', async (_, url: string) => {
     try {
+      console.log('------ handle navigate-url ------')
       routerManager.setUrl(url, browserContentView.webContents.getTitle());
       await browserContentView.webContents.loadURL(routerManager.loadUrl);
       return { success: true };

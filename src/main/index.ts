@@ -69,6 +69,7 @@ function createWindow(): void {
     routerManager.setUrl(url, browserContentView.webContents.getTitle());
     const sendUrl = routerManager.url;
     if (prevUrl !== sendUrl) {
+      console.log('update-url:\n', sendUrl, '\n');
       browserShellView.webContents.send('update-url', sendUrl);
       browserContentView.webContents.send('update-url', sendUrl);
     }
@@ -76,14 +77,14 @@ function createWindow(): void {
   // Subscribe to browser content view's navigation events
   browserContentView.webContents.on('did-navigate', (event, url) => {
     console.log('------ did-navigation ------');
-    console.log('event:', event);
+    // console.log('event:', event);
     console.log('url:', url);
     handleUpdateUrl(url);
   });
 
   browserContentView.webContents.on('did-navigate-in-page', (event, url) => {
     console.log('------ did-navigate-in-page ------');
-    console.log('event:', event);
+    // console.log('event:', event);
     console.log('url:', url);
     handleUpdateUrl(url);
   });
@@ -120,24 +121,24 @@ function createWindow(): void {
     browserShellView.webContents.loadFile(
       path.join(__dirname, '../ui/browser-shell/index.html')
     );
-    // browserContentView.webContents.loadURL(
-    //   format({
-    //     pathname: getAuthenticatorPath(),
-    //     protocol: 'file:',
-    //     slashes: true,
-    //   })
-    // );
+    browserContentView.webContents.loadURL(
+      format({
+        pathname: getAuthenticatorPath(),
+        protocol: 'file:',
+        slashes: true,
+      })
+    );
   } else {
     browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
-    // browserContentView.webContents.loadURL(AUTHENTICATOR_DEV_URL);
+    browserContentView.webContents.loadURL(AUTHENTICATOR_DEV_URL);
   }
-  browserContentView.webContents.loadURL(
-    format({
-      pathname: getAuthenticatorPath(),
-      protocol: 'file:',
-      slashes: true,
-    })
-  );
+  // browserContentView.webContents.loadURL(
+  //   format({
+  //     pathname: getAuthenticatorPath(),
+  //     protocol: 'file:',
+  //     slashes: true,
+  //   })
+  // );
 
   // Set up application menu
   createApplicationMenu(browserContentView, browserShellView);
