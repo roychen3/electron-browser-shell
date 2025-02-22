@@ -1,11 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  WebContentsView,
-  session,
-  protocol,
-  net,
-} from 'electron';
+import { app, BrowserWindow, WebContentsView, session } from 'electron';
 import { BROWSER_SHELL_DEV_URL, AUTHENTICATOR_DEV_URL } from './constants';
 import path from 'path';
 import { format } from 'url';
@@ -44,17 +37,20 @@ function createWindow(): void {
     },
   });
   routerManager.setWevContentsView(browserContentView);
-
   session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
     if (
       details.webContentsId === browserContentView.webContents.id &&
-      details.webContents?.getTitle() === 'app:///authenticator' &&
+      details.webContents &&
+      details.webContents.getTitle &&
+      details.webContents.getTitle().startsWith('app:///') &&
       details.url.startsWith('file:///') &&
-      !details.url.includes('authenticator')
+      !details.url.includes(
+        path.join(__dirname, '..', 'ui').replaceAll('\\', '/')
+      )
     ) {
       console.log('------ webRequest.onBeforeRequest ------');
       routerManager.url = details.url;
-      console.log('routerManager.url:', routerManager.url);
+      console.log('routerManager.url: \n', routerManager.url, '\n');
       callback({
         redirectURL: routerManager.loadUrl,
       });
