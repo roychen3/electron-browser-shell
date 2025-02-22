@@ -5,7 +5,7 @@ import { format } from 'url';
 
 import { createApplicationMenu } from './menu';
 import { setupAppRouterIPC } from './ipc';
-import { getAuthenticatorPath } from './pathResolver';
+import { getAppUiPathSection, getAuthenticatorPath } from './pathResolver';
 import { routerManager } from './RouterManager';
 
 function createWindow(): void {
@@ -44,9 +44,7 @@ function createWindow(): void {
       details.webContents.getTitle &&
       details.webContents.getTitle().startsWith('app:///') &&
       details.url.startsWith('file:///') &&
-      !details.url.includes(
-        path.join(__dirname, '..', 'ui').replaceAll('\\', '/')
-      )
+      !details.url.includes(getAppUiPathSection().replaceAll('\\', '/'))
     ) {
       console.log('------ webRequest.onBeforeRequest ------');
       routerManager.setUrl(details.url, details.webContents.getTitle());

@@ -1,38 +1,38 @@
-import { getAuthenticatorPath } from './pathResolver';
+import { format } from 'url';
+import { getAppUiPathSection } from './pathResolver';
 
 export class RouterManager {
-  private readonly URL_PREFIX = 'app:///authenticator';
+  readonly appUrlPrefix = 'app:///';
+  readonly fileUrlPrefix = 'file:///';
+  readonly appUiUrlSection = getAppUiPathSection().replaceAll('\\', '/');
   private _url: string = '';
 
   constructor() {}
 
-  setUrl(newValue: string, scope: string = '') {
-    if (newValue.includes(getAuthenticatorPath())) {
-      const uUrl = new URL(newValue);
+  setUrl(url: string, scope: string = '') {
+    console.log('------ RouterManager.setUrl ------');
+    console.log('1. this.appUiUrlSection: \n', this.appUiUrlSection, '\n');
+
+    if (url.includes(this.appUiUrlSection)) {
+      const uUrl = new URL(url);
       const pathname = uUrl.searchParams.get('pathname') || '/';
-      this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
+      const appName = uUrl.pathname
+        .replace(this.appUiUrlSection, '')
+        .split('/')[1];
+      this._url = `${this.appUrlPrefix}${appName}?pathname=${pathname}`;
+      console.log('1. this._url: \n', this._url, '\n');
     } else if (
-      scope === this.URL_PREFIX &&
-      newValue.startsWith('file:///') &&
-      newValue.includes('authenticator') &&
-      newValue.includes('index.html')
+      scope.startsWith(this.appUrlPrefix) &&
+      url.startsWith(this.fileUrlPrefix) &&
+      !url.includes(this.appUiUrlSection)
     ) {
-      const uUrl = new URL(newValue);
-      const pathname = uUrl.searchParams.get('pathname') || '/';
-      this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
-    } else if (scope === this.URL_PREFIX && newValue.startsWith('file:///')) {
-      const uUrl = new URL(newValue);
+      const uUrl = new URL(url);
       const pathname = uUrl.pathname.replace('C:/', '') || '/';
-      this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
-    } else if (
-      scope === this.URL_PREFIX &&
-      newValue.startsWith(this.URL_PREFIX)
-    ) {
-      const uUrl = new URL(newValue);
-      const pathname = uUrl.searchParams.get('pathname') || '/';
-      this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
+      this._url = `${scope}?pathname=${pathname}`;
+      console.log('2. this._url: \n', this._url, '\n');
     } else {
-      this._url = newValue;
+      this._url = url;
+      console.log('3. this._url: \n', this._url, '\n');
     }
   }
 
@@ -41,9 +41,26 @@ export class RouterManager {
   }
 
   get loadUrl() {
-    const uUrl = new URL(this.url);
-    const pathname = uUrl.searchParams.get('pathname') || '/';
-    return `file:///${getAuthenticatorPath()}?pathname=${pathname}`;
+    console.log('------ RouterManager.loadUrl ------');
+    console.log('this._url: \n', this._url, '\n');
+    if (this.url.startsWith(this.appUrlPrefix)) {
+      console.log('1. \n');
+      const uUrl = new URL(this.url);
+      const pathname = uUrl.searchParams.get('pathname') || '/';
+      const appName = uUrl.pathname.replaceAll('/', '');
+
+      return format({
+        pathname: `${this.appUiUrlSection}${appName}/index.html`,
+        protocol: 'file:',
+        slashes: true,
+        query: {
+          pathname,
+        },
+      });
+    }
+
+    console.log('2. \n');
+    return this.url;
   }
 }
 
