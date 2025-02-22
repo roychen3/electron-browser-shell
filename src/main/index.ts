@@ -36,7 +36,7 @@ function createWindow(): void {
       preload: path.join(__dirname, 'preload.js'),
     },
   });
-  routerManager.setWevContentsView(browserContentView);
+
   session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
     if (
       details.webContentsId === browserContentView.webContents.id &&
@@ -49,7 +49,7 @@ function createWindow(): void {
       )
     ) {
       console.log('------ webRequest.onBeforeRequest ------');
-      routerManager.url = details.url;
+      routerManager.setUrl(details.url, details.webContents.getTitle());
       console.log('routerManager.url: \n', routerManager.url, '\n');
       callback({
         redirectURL: routerManager.loadUrl,
@@ -68,7 +68,7 @@ function createWindow(): void {
 
   const handleUpdateUrl = async (url: string) => {
     const prevUrl = routerManager.url;
-    routerManager.url = url;
+    routerManager.setUrl(url, browserContentView.webContents.getTitle());
     const sendUrl = routerManager.url;
     if (prevUrl !== sendUrl) {
       browserShellView.webContents.send('update-url', sendUrl);

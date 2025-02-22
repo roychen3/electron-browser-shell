@@ -1,31 +1,18 @@
-import { WebContentsView } from 'electron';
 import { getAuthenticatorPath } from './pathResolver';
 
 export class RouterManager {
   private readonly URL_PREFIX = 'app:///authenticator';
-  private _wevContentsView: WebContentsView | null = null;
   private _url: string = '';
 
   constructor() {}
 
-  setWevContentsView(newValue: WebContentsView) {
-    this._wevContentsView = newValue;
-  }
-  private get wevContentsView() {
-    if (!this._wevContentsView) {
-      throw new Error('wevContentsView is not set');
-    }
-    return this._wevContentsView;
-  }
-
-  set url(newValue: string) {
-    const currentTitle = this.wevContentsView.webContents.getTitle();
+  setUrl(newValue: string, scope: string = '') {
     if (newValue.includes(getAuthenticatorPath())) {
       const uUrl = new URL(newValue);
       const pathname = uUrl.searchParams.get('pathname') || '/';
       this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
     } else if (
-      currentTitle === this.URL_PREFIX &&
+      scope === this.URL_PREFIX &&
       newValue.startsWith('file:///') &&
       newValue.includes('authenticator') &&
       newValue.includes('index.html')
@@ -33,15 +20,12 @@ export class RouterManager {
       const uUrl = new URL(newValue);
       const pathname = uUrl.searchParams.get('pathname') || '/';
       this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
-    } else if (
-      currentTitle === this.URL_PREFIX &&
-      newValue.startsWith('file:///')
-    ) {
+    } else if (scope === this.URL_PREFIX && newValue.startsWith('file:///')) {
       const uUrl = new URL(newValue);
       const pathname = uUrl.pathname.replace('C:/', '') || '/';
       this._url = `${this.URL_PREFIX}?pathname=${pathname}`;
     } else if (
-      currentTitle === this.URL_PREFIX &&
+      scope === this.URL_PREFIX &&
       newValue.startsWith(this.URL_PREFIX)
     ) {
       const uUrl = new URL(newValue);
