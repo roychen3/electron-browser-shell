@@ -26,7 +26,8 @@ function App() {
       // Ensure URL has protocol
       const formattedUrl = (str: string) => {
         if (str.startsWith('http')) return str;
-        if (str.startsWith('file')) return str;
+        if (str.startsWith('file:')) return str;
+        if (str.startsWith('app:')) return str;
         return `https://${str}`;
 
       }
