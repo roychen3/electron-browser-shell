@@ -3,9 +3,9 @@ import { AUTHENTICATOR_DEV_URL, BROWSER_SHELL_DEV_URL } from './constants';
 import path from 'path';
 
 import { createApplicationMenu } from './menu';
-import { setupAppRouterIPC } from './ipc';
 import { getAppUiPath, getBrowserOperatorPreloadPath } from './pathResolver';
 import { routerManager } from './RouterManager';
+import { createBrowserContentView } from './browserContentView'
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -33,40 +33,14 @@ function createWindow(): void {
   });
 
   // Create browser content view
-  const browserContentView = new WebContentsView({
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: getBrowserOperatorPreloadPath(),
-    },
-  });
-
-  // Setup IPC handlers
-  setupAppRouterIPC(browserContentView);
+  const browserContentView = createBrowserContentView({
+    routerManager,
+    browserShellView,
+  })
 
   // Add views to the window
   win.contentView.addChildView(browserShellView);
   win.contentView.addChildView(browserContentView);
-
-  const handleUpdateUrl = async (url: string) => {
-    const prevUrl = routerManager.url;
-    routerManager.setUrl(url);
-    const sendUrl = routerManager.url;
-    if (prevUrl !== sendUrl) {
-      browserShellView.webContents.send('update-url', url);
-      browserContentView.webContents.send('update-url', url);
-    }
-  };
-  // Subscribe to browser content view's navigation events
-  browserContentView.webContents.on('did-navigate', (_event, url) => {
-    console.log(('------ did-navigate ------'))
-    handleUpdateUrl(url);
-  });
-
-  browserContentView.webContents.on('did-navigate-in-page', (_event, url) => {
-    console.log(('------ did-navigate-in-page ------'))
-    handleUpdateUrl(url);
-  });
 
   // Function to update view bounds
   const shellHeight = 56; // Height of the shell UI
@@ -107,10 +81,13 @@ function createWindow(): void {
     browserContentView.webContents.loadURL(
       `${AUTHENTICATOR_DEV_URL}/feature-one`
     );
+    // for dev
+    // routerManager.setUrl('app://authenticator/?pathname=/feature-one');
+    // browserContentView.webContents.loadURL(routerManager.url);
   }
 
   // Set up application menu
-  createApplicationMenu(browserContentView, browserShellView);
+  createApplicationMenu(browserShellView, browserContentView);
 }
 
 app.whenReady().then(() => {
