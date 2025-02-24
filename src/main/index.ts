@@ -122,9 +122,13 @@ app.whenReady().then(() => {
       const pathname = uUrl.pathname === '/' ? 'index.html' : uUrl.pathname;
       const pathnameParam = uUrl.searchParams.get('pathname') || '/';
       const appPath = getAppUiPath(
-        `${appName}/${pathname}?pathname=${pathnameParam}`
+        `${appName}/${pathname}${pathname === 'index.html' ? `?pathname=${pathnameParam}` : ''}`
       );
-      return net.fetch(appPath);
+      // [TODO]for windows
+      // return net.fetch(appPath);
+
+      // for mac
+      return net.fetch(`file://${appPath}`);
     } catch (error) {
       console.error(`Failed to load URL: ${req.url}`, error);
       return new Response('File not found', { status: 404 });
