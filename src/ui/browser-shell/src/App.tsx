@@ -21,18 +21,17 @@ function App() {
       url: '',
       title: 'New Tab',
     };
-    setTabs([...tabs, newTab]);
+    setTabs((prevTabs) => [...prevTabs, newTab]);
     setActiveTabId(newTab.id);
     setUrl('');
   };
 
   const closeTab = (tabId: string) => {
-    if (tabs.length === 1) {
-      addNewTab();
-    }
     const newTabs = tabs.filter((tab) => tab.id !== tabId);
     setTabs(newTabs);
-    if (tabId === activeTabId) {
+    if (tabs.length === 1) {
+      addNewTab();
+    } else if (tabId === activeTabId) {
       setActiveTabId(newTabs[newTabs.length - 1].id);
       setUrl(newTabs[newTabs.length - 1].url);
     }
