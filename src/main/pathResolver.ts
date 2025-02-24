@@ -10,3 +10,6 @@ export const getBrowserShellPath = () =>
 
 export const getAuthenticatorPath = () =>
   path.join(__dirname, '../ui/authenticator/index.html');
+
+export const getBrowserOperatorPreloadPath = () =>
+  path.join(__dirname, './preload/browserOperator.js');

@@ -4,7 +4,7 @@ import path from 'path';
 
 import { createApplicationMenu } from './menu';
 import { setupAppRouterIPC } from './ipc';
-import { getAppUiPath } from './pathResolver';
+import { getAppUiPath, getBrowserOperatorPreloadPath } from './pathResolver';
 import { routerManager } from './RouterManager';
 
 // 在應用啟動前註冊自訂協議
@@ -28,7 +28,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: getBrowserOperatorPreloadPath(),
     },
   });
 
@@ -37,7 +37,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: getBrowserOperatorPreloadPath(),
     },
   });
 
