@@ -59,10 +59,12 @@ function createWindow(): void {
   };
   // Subscribe to browser content view's navigation events
   browserContentView.webContents.on('did-navigate', (_event, url) => {
+    console.log(('------ did-navigate ------'))
     handleUpdateUrl(url);
   });
 
   browserContentView.webContents.on('did-navigate-in-page', (_event, url) => {
+    console.log(('------ did-navigate-in-page ------'))
     handleUpdateUrl(url);
   });
 
@@ -113,6 +115,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   protocol.handle('app', async (req) => {
+    console.log(('------ handle protocol: app ------'))
     try {
       const uUrl = new URL(req.url);
       const appName = uUrl.host;

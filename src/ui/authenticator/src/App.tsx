@@ -72,11 +72,13 @@ const navigate = (url: string) => {
 
 // Get initial URL
 window.electronAPI.getCurrentUrl().then((url) => {
+  console.log(('------ getCurrentUrl ------'))
   navigate(url);
 });
 
 // Subscribe to URL updates
 window.electronAPI.onUrlUpdate((url) => {
+  console.log(('------ onUrlUpdate ------'))
   navigate(url);
 });
 
