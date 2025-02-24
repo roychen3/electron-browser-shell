@@ -43,7 +43,7 @@ function createWindow(): void {
   win.contentView.addChildView(browserContentView);
 
   // Function to update view bounds
-  const shellHeight = 56; // Height of the shell UI
+  const shellHeight = 86; // Height of the shell UI
 
   // Function to update view bounds on window resize
   const updateViewBounds = () => {
