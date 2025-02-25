@@ -9,43 +9,62 @@ interface Tab {
 }
 
 function App() {
-  const [tabs, setTabs] = useState<Tab[]>([
-    { id: '1', url: '', title: 'New Tab' },
-  ]);
+  const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState('1');
   const [url, setUrl] = useState('');
 
-  const addNewTab = () => {
-    const newTab = {
-      id: Date.now().toString(),
-      url: '',
-      title: 'New Tab',
-    };
-    setTabs((prevTabs) => [...prevTabs, newTab]);
+  const addNewTab = async () => {
+    const { data } = await window.electronAPI.createTab({
+      url: import.meta.env.PROD
+        ? 'app://authenticator/?pathname=/feature-one'
+        : 'http://localhost:3010/feature-one',
+    });
+    if (!data) {
+      throw new Error('New tab occurred error');
+    }
+
+    const [newTab, tabs] = data;
+    await window.electronAPI.setActiveTabId(newTab.id);
+    setTabs(tabs);
     setActiveTabId(newTab.id);
-    setUrl('');
+    setUrl(newTab.url);
   };
 
-  const closeTab = (tabId: string) => {
-    const newTabs = tabs.filter((tab) => tab.id !== tabId);
+  const closeTab = async (tabId: string) => {
+    const { data: newTabs } = await window.electronAPI.deleteTabById(tabId);
+    if (!newTabs) {
+      throw new Error('Close tabs occurred error');
+    }
     setTabs(newTabs);
-    if (tabs.length === 1) {
-      addNewTab();
-    } else if (tabId === activeTabId) {
-      setActiveTabId(newTabs[newTabs.length - 1].id);
-      setUrl(newTabs[newTabs.length - 1].url);
+
+    if (tabId === activeTabId) {
+      const newActiveTabId = newTabs[newTabs.length - 1].id;
+      await window.electronAPI.setActiveTabId(newActiveTabId);
+      setActiveTabId(newActiveTabId);
+
+      const activeTab = tabs.find((tab) => tab.id === newActiveTabId);
+      if (!activeTab) {
+        throw new Error('Active tab not found');
+      }
+      setUrl(activeTab.url);
     }
   };
 
-  const switchTab = (tabId: string) => {
+  const switchTab = async (tabId: string) => {
+    await window.electronAPI.setActiveTabId(tabId);
+    const { data: tab } = await window.electronAPI.getTabById(tabId);
+    if (!tab) {
+      throw new Error('Active tab not found');
+    }
     setActiveTabId(tabId);
-    const tab = tabs.find((t) => t.id === tabId);
-    if (tab) {
-      setUrl(tab.url);
-    }
+    setUrl(tab.url);
   };
 
-  const handleUrlSubmit = async () => {
+  const handleUrlChange = (url: string) => {
+    setUrl(url);
+  };
+
+  const handleUrlSubmit = async (submitUrl: string) => {
     try {
       // Ensure URL has protocol
       const formattedUrl = (str: string) => {
@@ -54,32 +73,40 @@ function App() {
         if (str.startsWith('app:')) return str;
         return `https://${str}`;
       };
-      const urlToNavigate = formattedUrl(url);
-      const result = await window.electronAPI.navigateUrl(urlToNavigate);
-      if (result.success) {
-        // Update the current tab's URL and title
-        setTabs(
-          tabs.map((tab) =>
-            tab.id === activeTabId
-              ? { ...tab, url: urlToNavigate, title: urlToNavigate }
-              : tab
-          )
-        );
-      } else {
-        console.error('Navigation failed:', result.error);
+      const urlToNavigate = formattedUrl(submitUrl);
+      const [{ data: updateResultData }] = await Promise.all([
+        window.electronAPI.updateTabById({
+          id: activeTabId,
+          value: {
+            url: urlToNavigate,
+          },
+        }),
+        window.electronAPI.browserNavigateTo(urlToNavigate),
+      ]);
+      if (!updateResultData) {
+        throw new Error('Update tab URL occurred error');
       }
+
+      const [, tabs] = updateResultData;
+      setTabs(tabs);
     } catch (error) {
       console.error('Navigation error:', error);
     }
   };
 
   useEffect(() => {
-    // Get initial URL
-    window.electronAPI.getCurrentUrl().then((url) => {
-      setUrl(url);
-    });
+    const setInitActiveId = async () => {
+      console.log('-- setInitActiveId ----');
+      const [{ data: tabs }, { data: activeTab }] = await Promise.all([
+        window.electronAPI.getTabs(),
+        window.electronAPI.getActiveTab(),
+      ]);
+      setTabs(tabs || []);
+      setActiveTabId(activeTab?.id || '');
+      setUrl(activeTab?.url || '');
+    };
+    setInitActiveId();
 
-    // Subscribe to URL updates
     const destroyOnUrlUpdate = window.electronAPI.onUrlUpdate((url) => {
       setUrl(url);
     });
@@ -100,7 +127,7 @@ function App() {
       />
       <NavigationBar
         value={url}
-        onUrlChange={setUrl}
+        onUrlChange={handleUrlChange}
         onSubmit={handleUrlSubmit}
       />
     </div>

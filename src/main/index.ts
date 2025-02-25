@@ -1,11 +1,16 @@
 import { app, BrowserWindow, WebContentsView, protocol, net } from 'electron';
-import { AUTHENTICATOR_DEV_URL, BROWSER_SHELL_DEV_URL } from './constants';
+import {
+  AUTHENTICATOR_DEV_URL,
+  BROWSER_SHELL_DEV_URL,
+  BROWSER_SHELL_HEIGHT,
+} from './constants';
 import path from 'path';
 
 import { createApplicationMenu } from './menu';
 import { getAppUiPath, getBrowserOperatorPreloadPath } from './pathResolver';
-import { routerManager } from './RouterManager';
-import { createBrowserContentView } from './browserContentView'
+import { createBrowserContentView } from './browserContentView';
+import { Tab, TabManager } from './TabManager';
+import { setupAppRouterIPC, setupAppTabIPC } from './IPC';
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -32,74 +37,146 @@ function createWindow(): void {
     },
   });
 
-  // Create browser content view
-  const browserContentView = createBrowserContentView({
-    routerManager,
-    browserShellView,
-  })
-
-  // Add views to the window
-  win.contentView.addChildView(browserShellView);
-  win.contentView.addChildView(browserContentView);
-
-  // Function to update view bounds
-  const shellHeight = 86; // Height of the shell UI
-
-  // Function to update view bounds on window resize
-  const updateViewBounds = () => {
-    const winBounds = win.getBounds();
-    browserShellView.setBounds({
-      x: 0,
-      y: 0,
-      width: winBounds.width,
-      height: shellHeight,
-    });
-
-    browserContentView.setBounds({
-      x: 0,
-      y: shellHeight,
-      width: winBounds.width,
-      height: winBounds.height - shellHeight,
-    });
-  };
-
-  // Initial bounds setup
-  updateViewBounds();
-
-  // Update bounds when window is resized
-  win.on('resize', updateViewBounds);
-
   // Load content into views
   if (app.isPackaged) {
     browserShellView.webContents.loadFile(
       path.join(__dirname, '../ui/browser-shell/index.html')
     );
-    routerManager.setUrl('app://authenticator/?pathname=/feature-one');
-    browserContentView.webContents.loadURL(routerManager.url);
   } else {
     browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
-    browserContentView.webContents.loadURL(
-      `${AUTHENTICATOR_DEV_URL}/feature-one`
-    );
-    // for dev
-    // routerManager.setUrl('app://authenticator/?pathname=/feature-one');
-    // browserContentView.webContents.loadURL(routerManager.url);
   }
 
+  const updateShellViewBounds = () => {
+    const winBounds = win.getBounds();
+    browserShellView.setBounds({
+      x: 0,
+      y: 0,
+      width: winBounds.width,
+      height: BROWSER_SHELL_HEIGHT,
+    });
+  };
+  // Init shell view bounds
+  updateShellViewBounds();
+
+  const browserContentViewsMap = new Map<string, WebContentsView>();
+  const tabManager = new TabManager();
+  setupAppTabIPC(tabManager);
+
+  const getActiveBrowserContentView = () => {
+    const activeTabId = tabManager.getActiveTabId();
+    const currentBrowserContentView = browserContentViewsMap.get(activeTabId);
+    if (!currentBrowserContentView) {
+      throw new Error('Current browser content view not found');
+    }
+    return currentBrowserContentView;
+  };
+
+  const updateContentViewBounds = (contentView: WebContentsView) => {
+    const winBounds = win.getBounds();
+
+    const currentBrowserContentView = contentView;
+    currentBrowserContentView.setBounds({
+      x: 0,
+      y: BROWSER_SHELL_HEIGHT,
+      width: winBounds.width,
+      height: winBounds.height - BROWSER_SHELL_HEIGHT,
+    });
+  };
+
+  tabManager.onCreateTab((tab) => {
+    console.log('-- tabManager.onCreateTab ----');
+
+    const newBrowserContentView = createBrowserContentView({
+      tabId: tab.id,
+      tabManager,
+      browserShellView,
+    });
+
+    newBrowserContentView.setVisible(false);
+    win.contentView.addChildView(newBrowserContentView);
+    updateContentViewBounds(newBrowserContentView);
+    if (app.isPackaged) {
+      newBrowserContentView.webContents.loadURL(DEFAULT_URL);
+    } else {
+      newBrowserContentView.webContents.loadURL(
+        `${AUTHENTICATOR_DEV_URL}/feature-one`
+      );
+      // for dev
+      // newBrowserContentView.webContents.loadURL(DEFAULT_URL);
+    }
+    browserContentViewsMap.set(tab.id, newBrowserContentView);
+  });
+
+  tabManager.onUpdateTabById(({ newValue, oldValue }) => {
+    console.log('-- tabManager.onUpdateTabById ----');
+    const tabContentView = browserContentViewsMap.get(newValue.id);
+    if (oldValue?.url !== newValue.url && tabContentView) {
+      tabContentView.webContents.send('update-url', newValue.url);
+    }
+  });
+
+  tabManager.onDeleteTabById((id) => {
+    console.log('-- tabManager.onDeleteTabById ----');
+    const tabContentView = browserContentViewsMap.get(id);
+    if (tabContentView) {
+      win.contentView.removeChildView(tabContentView);
+      browserContentViewsMap.delete(id);
+      if (browserContentViewsMap.size === 0) {
+        app.quit();
+      }
+    }
+  });
+
+  tabManager.onSetActiveTabId(({ newId, prevId }) => {
+    console.log('-- tabManager.onSetActiveTabId ----');
+    const tabContentView = browserContentViewsMap.get(newId);
+    if (newId !== prevId && tabContentView) {
+      tabManager.getTabs().forEach((tab) => {
+        const currentTabContentView = browserContentViewsMap.get(tab.id);
+        if (currentTabContentView) {
+          if (tab.id === newId) {
+            currentTabContentView.setVisible(true);
+            updateContentViewBounds(currentTabContentView);
+          } else {
+            currentTabContentView.setVisible(false);
+          }
+        }
+      });
+    }
+  });
+
+  // create default tab first
+  const DEFAULT_TAB_ID = 'default-open-tab-id';
+  const DEFAULT_URL = 'app://authenticator/?pathname=/feature-one';
+  tabManager.createTab({ id: DEFAULT_TAB_ID, url: DEFAULT_URL });
+  tabManager.setActiveTabId(DEFAULT_TAB_ID);
+
+  setupAppRouterIPC(getActiveBrowserContentView);
+
+  win.on('resize', () => {
+    updateShellViewBounds();
+    updateContentViewBounds(getActiveBrowserContentView());
+  });
+
+  // Add views to the window
+  win.contentView.addChildView(browserShellView);
+
   // Set up application menu
-  createApplicationMenu(browserShellView, browserContentView);
+  createApplicationMenu(browserShellView, getActiveBrowserContentView);
 }
 
 app.whenReady().then(() => {
   protocol.handle('app', async (req) => {
-    console.log(('------ handle protocol: app ------'))
+    console.log('-- handle protocol: app ----');
     try {
       const uUrl = new URL(req.url);
       const appName = uUrl.host;
       const pathname = uUrl.pathname === '/' ? 'index.html' : uUrl.pathname;
       const pathnameParam = uUrl.searchParams.get('pathname') || '/';
       const appPath = getAppUiPath(
-        `${appName}/${pathname}${pathname === 'index.html' ? `?pathname=${pathnameParam}` : ''}`
+        `${appName}/${pathname}${
+          pathname === 'index.html' ? `?pathname=${pathnameParam}` : ''
+        }`
       );
       // [TODO]for windows
       // return net.fetch(appPath);

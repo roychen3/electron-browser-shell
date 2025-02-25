@@ -20,7 +20,6 @@ export default function NavigationBar({
   };
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log('newValue:', newValue)
     setInnerUrl?.(newValue);
     onUrlChangeProps?.(newValue);
   };
