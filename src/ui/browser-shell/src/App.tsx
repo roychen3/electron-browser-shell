@@ -74,20 +74,13 @@ function App() {
         return `https://${str}`;
       };
       const urlToNavigate = formattedUrl(submitUrl);
-      const [{ data: updateResultData }] = await Promise.all([
-        window.electronAPI.updateTabById({
-          id: activeTabId,
-          value: {
-            url: urlToNavigate,
-          },
-        }),
-        window.electronAPI.browserNavigateTo(urlToNavigate),
-      ]);
-      if (!updateResultData) {
-        throw new Error('Update tab URL occurred error');
+
+      await window.electronAPI.browserNavigateTo(urlToNavigate);
+      const { data: tabs } = await window.electronAPI.getTabs();
+      if (!tabs) {
+        throw new Error('Get tabs occurred error');
       }
 
-      const [, tabs] = updateResultData;
       setTabs(tabs);
     } catch (error) {
       console.error('Navigation error:', error);

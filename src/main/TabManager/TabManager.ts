@@ -19,9 +19,9 @@ export class TabManager implements ITabManager {
   createTab(value?: Partial<Tab>): ReturnType<ITabManager['createTab']> {
     const newTab: Tab = {
       id: Date.now().toString(),
-      url: '',
       title: 'New Tab',
       ...value,
+      url: value?.url ? new URL(value.url).href : '',
     };
     this._emitter.emit('onCreateTab', newTab);
 
@@ -34,13 +34,20 @@ export class TabManager implements ITabManager {
     return () => this._emitter.removeListener('onCreateTab', listener);
   }
 
-  updateTabById(id: string, value: Partial<Tab>): ReturnType<ITabManager['updateTabById']> {
+  updateTabById(
+    id: string,
+    value: Partial<Tab>
+  ): ReturnType<ITabManager['updateTabById']> {
     let targetTab = this._tabs.find((tab) => tab.id === id);
     if (!targetTab) {
       throw new Error('Target tab not found');
     }
     const oldTab = targetTab;
-    const newTab = { ...targetTab, ...value };
+    const newTab = {
+      ...targetTab,
+      ...value,
+      url: value.url ? new URL(value.url).href : targetTab.url,
+    };
     const newTabs = this._tabs.map((tab) => {
       if (tab.id === id) {
         return newTab;

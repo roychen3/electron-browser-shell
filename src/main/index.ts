@@ -109,8 +109,12 @@ function createWindow(): void {
 
   tabManager.onUpdateTabById(({ newValue, oldValue }) => {
     console.log('-- tabManager.onUpdateTabById ----');
+    console.log('---- newValue.url:', newValue.url);
+    console.log('---- oldValue.url:', oldValue?.url);
     const tabContentView = browserContentViewsMap.get(newValue.id);
-    if (oldValue?.url !== newValue.url && tabContentView) {
+    const urlEqual = oldValue?.url === newValue.url;
+    if (!urlEqual && tabContentView) {
+      console.log('------ send `update-url`');
       tabContentView.webContents.send('update-url', newValue.url);
     }
   });
