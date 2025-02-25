@@ -49,6 +49,8 @@ const router = createMemoryRouter([
 let tempPathname = '/';
 
 router.subscribe((state) => {
+  console.log('-- router.subscribe ----');
+  console.log('pathname:', state.location.pathname);
   const newPathname = state.location.pathname.replace('C:/', '');
   if (tempPathname !== newPathname) {
     tempPathname = newPathname;
@@ -60,6 +62,7 @@ router.subscribe((state) => {
 });
 
 const navigate = (url: string) => {
+  console.log('url:', url);
   const uUrl = new URL(url);
   const pathname = import.meta.env.PROD
     ? uUrl.searchParams.get('pathname')
@@ -70,15 +73,17 @@ const navigate = (url: string) => {
   }
 };
 
-// Get initial URL
-window.electronAPI.getCurrentUrl().then((url) => {
-  console.log(('------ getCurrentUrl ------'))
-  navigate(url);
-});
+const setInitUrl = async () => {
+  console.log('-- setInitUrl ----');
+  const tabId = await window.electronAPI.getOwnTabId();
+  const tab = await window.electronAPI.getTabById(tabId || '');
+  navigate(tab?.url || '');
+};
+setInitUrl();
 
 // Subscribe to URL updates
 window.electronAPI.onUrlUpdate((url) => {
-  console.log(('------ onUrlUpdate ------'))
+  console.log('-- onUrlUpdate ----');
   navigate(url);
 });
 
