@@ -47,7 +47,7 @@ function createWindow(): void {
   }
 
   const updateShellViewBounds = () => {
-    const winBounds = win.getBounds();
+    const winBounds = win.getContentBounds();
     browserShellView.setBounds({
       x: 0,
       y: 0,
@@ -72,7 +72,7 @@ function createWindow(): void {
   };
 
   const updateContentViewBounds = (contentView: WebContentsView) => {
-    const winBounds = win.getBounds();
+    const winBounds = win.getContentBounds();
 
     const currentBrowserContentView = contentView;
     currentBrowserContentView.setBounds({
