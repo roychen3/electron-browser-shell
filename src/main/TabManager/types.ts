@@ -4,7 +4,7 @@ export interface Tab {
   title: string;
 }
 
-export interface ITabManager {
+export interface TabService {
   getTabs(): Tab[];
   getTabById(id: string): Tab | null;
   createTab(value?: Partial<Tab>): [Tab, Tab[]];

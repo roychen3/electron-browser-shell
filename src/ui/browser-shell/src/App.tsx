@@ -14,15 +14,11 @@ function App() {
   const [url, setUrl] = useState('');
 
   const addNewTab = async () => {
-    const { data } = await window.electronAPI.createTab({
+    const data = await window.electronAPI.createTab({
       url: import.meta.env.PROD
         ? 'app://authenticator/?pathname=/feature-one'
         : 'http://localhost:3010/feature-one',
     });
-    if (!data) {
-      throw new Error('New tab occurred error');
-    }
-
     const [newTab, tabs] = data;
     await window.electronAPI.setActiveTabId(newTab.id);
     setTabs(tabs);
@@ -31,28 +27,25 @@ function App() {
   };
 
   const closeTab = async (tabId: string) => {
-    const { data: newTabs } = await window.electronAPI.deleteTabById(tabId);
-    if (!newTabs) {
-      throw new Error('Close tabs occurred error');
-    }
-    setTabs(newTabs);
+    const newTabs = await window.electronAPI.deleteTabById(tabId);
 
     if (tabId === activeTabId) {
       const newActiveTabId = newTabs[newTabs.length - 1].id;
       await window.electronAPI.setActiveTabId(newActiveTabId);
-      setActiveTabId(newActiveTabId);
-
+      
       const activeTab = tabs.find((tab) => tab.id === newActiveTabId);
       if (!activeTab) {
         throw new Error('Active tab not found');
       }
+      setActiveTabId(newActiveTabId);
       setUrl(activeTab.url);
     }
+    setTabs(newTabs);
   };
 
   const switchTab = async (tabId: string) => {
     await window.electronAPI.setActiveTabId(tabId);
-    const { data: tab } = await window.electronAPI.getTabById(tabId);
+    const tab = await window.electronAPI.getTabById(tabId);
     if (!tab) {
       throw new Error('Active tab not found');
     }
@@ -74,13 +67,8 @@ function App() {
         return `https://${str}`;
       };
       const urlToNavigate = formattedUrl(submitUrl);
-
       await window.electronAPI.browserNavigateTo(urlToNavigate);
-      const { data: tabs } = await window.electronAPI.getTabs();
-      if (!tabs) {
-        throw new Error('Get tabs occurred error');
-      }
-
+      const tabs = await window.electronAPI.getTabs();
       setTabs(tabs);
     } catch (error) {
       console.error('Navigation error:', error);
@@ -90,7 +78,7 @@ function App() {
   useEffect(() => {
     const setInitActiveId = async () => {
       console.log('-- setInitActiveId ----');
-      const [{ data: tabs }, { data: activeTab }] = await Promise.all([
+      const [tabs, activeTab] = await Promise.all([
         window.electronAPI.getTabs(),
         window.electronAPI.getActiveTab(),
       ]);

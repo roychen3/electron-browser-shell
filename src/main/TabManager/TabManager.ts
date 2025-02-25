@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import type { Tab, ITabManager } from './types';
+import type { Tab, TabService } from './types';
 
-export class TabManager implements ITabManager {
+export class TabManager implements TabService {
   private _emitter = new EventEmitter();
   private _tabs: Tab[] = [];
   private _activeTabId: string = '';
@@ -16,7 +16,7 @@ export class TabManager implements ITabManager {
     return this._tabs.find((tab) => tab.id === id) || null;
   }
 
-  createTab(value?: Partial<Tab>): ReturnType<ITabManager['createTab']> {
+  createTab(value?: Partial<Tab>): ReturnType<TabService['createTab']> {
     const newTab: Tab = {
       id: Date.now().toString(),
       title: 'New Tab',
@@ -37,7 +37,7 @@ export class TabManager implements ITabManager {
   updateTabById(
     id: string,
     value: Partial<Tab>
-  ): ReturnType<ITabManager['updateTabById']> {
+  ): ReturnType<TabService['updateTabById']> {
     let targetTab = this._tabs.find((tab) => tab.id === id);
     if (!targetTab) {
       throw new Error('Target tab not found');

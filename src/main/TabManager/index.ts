@@ -1,2 +1,2 @@
-export type { Tab, ITabManager } from './types';
+export type { Tab, TabService } from './types';
 export { TabManager } from './TabManager';

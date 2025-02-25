@@ -31,6 +31,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return ipcRenderer.invoke('get-active-tab');
   },
   getOwnTabId: () => {
-    return { success: true, data: getProcessArgvValue('tab-id') };
+    return getProcessArgvValue('tab-id');
   },
 });

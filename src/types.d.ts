@@ -1,29 +1,35 @@
-import { type Tab, type ITabManager } from './main/TabManager';
-
-type Result<T> = Promise<{ success: boolean; data?: T; error?: string }>;
+import { type Tab, type TabService } from './main/TabManager';
 
 declare global {
   interface Window {
     electronAPI: {
       onUrlUpdate: (callback: (url: string) => void) => () => void;
-      browserNavigateTo: (url: string) => Result<void>;
-      browserBack: () => Result<boolean>;
-      browserForward: () => Result<boolean>;
-      browserReload: () => Result<boolean>;
+      browserNavigateTo: (url: string) => Promise<void>;
+      browserBack: () => Promise<void>;
+      browserForward: () => Promise<void>;
+      browserReload: () => Promise<void>;
 
-      getTabs: () => Result<ReturnType<ITabManager['getTabs']>>;
-      getTabById: (id: string) => Result<ReturnType<ITabManager['getTabById']>>;
-      createTab: (value?: Partial<Tab>) => Result<ReturnType<ITabManager['createTab']>>;
+      getTabs: () => Promise<ReturnType<TabService['getTabs']>>;
+      getTabById: (
+        id: string
+      ) => Promise<ReturnType<TabService['getTabById']>>;
+      createTab: (
+        value?: Partial<Tab>
+      ) => Promise<ReturnType<TabService['createTab']>>;
       updateTabById: (value: {
         id: string;
         value: Partial<Tab>;
-      }) => Result<ReturnType<ITabManager['updateTabById']>>;
-      deleteTabById: (id: string) => Result<ReturnType<ITabManager['deleteTabById']>>;
-      getActiveTabId: () => Result<ReturnType<ITabManager['getActiveTabId']>>;
-      setActiveTabId: (id: string) => Result<ReturnType<ITabManager['setActiveTabId']>>;
-      getActiveTab: () => Result<ReturnType<ITabManager['getActiveTab']>>;
+      }) => Promise<ReturnType<TabService['updateTabById']>>;
+      deleteTabById: (
+        id: string
+      ) => Promise<ReturnType<TabService['deleteTabById']>>;
+      getActiveTabId: () => Promise<ReturnType<TabService['getActiveTabId']>>;
+      setActiveTabId: (
+        id: string
+      ) => Promise<ReturnType<TabService['setActiveTabId']>>;
+      getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
 
-      getOwnTabId: () => Result<string>;
+      getOwnTabId: () => Promise<string>;
     };
   }
 }
