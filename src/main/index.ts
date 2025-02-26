@@ -1,15 +1,18 @@
 import { app, BrowserWindow, WebContentsView, protocol, net } from 'electron';
+
 import {
   AUTHENTICATOR_DEV_URL,
   BROWSER_SHELL_DEV_URL,
   BROWSER_SHELL_HEIGHT,
 } from './constants';
-import path from 'path';
-
 import { createApplicationMenu } from './menu';
-import { getAppUiPath, getBrowserOperatorPreloadPath } from './pathResolver';
+import {
+  getAppUiPath,
+  getBrowserOperatorPreloadPath,
+  getBrowserShellPath,
+} from './pathResolver';
 import { createBrowserContentView } from './browserContentView';
-import { Tab, TabManager } from './TabManager';
+import { TabManager } from './TabManager';
 import { setupAppRouterIPC, setupAppTabIPC } from './IPC';
 
 // 在應用啟動前註冊自訂協議
@@ -33,9 +36,7 @@ function createWindow(): void {
 
   // Load content into views
   if (app.isPackaged) {
-    browserShellView.webContents.loadFile(
-      path.join(__dirname, '../ui/browser-shell/index.html')
-    );
+    browserShellView.webContents.loadFile(getBrowserShellPath());
   } else {
     browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
   }

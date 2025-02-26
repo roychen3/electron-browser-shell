@@ -1,4 +1,5 @@
 import { WebContentsView } from 'electron';
+
 import { getBrowserOperatorPreloadPath } from '../pathResolver';
 import { TabManager } from '../TabManager';
 

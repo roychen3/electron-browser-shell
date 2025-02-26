@@ -1,6 +1,4 @@
 import { WebContentsView, Menu } from 'electron';
-import { BROWSER_SHELL_DEV_URL, AUTHENTICATOR_DEV_URL } from './constants';
-import path from 'path';
 
 export function createApplicationMenu(
   browserShellView: WebContentsView,
