@@ -4,16 +4,16 @@ import {
   AUTHENTICATOR_DEV_URL,
   BROWSER_SHELL_DEV_URL,
   BROWSER_SHELL_HEIGHT,
-} from './constants';
-import { createApplicationMenu } from './menu';
+} from './constants.js';
+import { createApplicationMenu } from './menu.js';
 import {
   getAppUiPath,
   getBrowserOperatorPreloadPath,
   getBrowserShellPath,
-} from './pathResolver';
-import { createBrowserContentView } from './browserContentView';
-import { TabManager } from './TabManager';
-import { setupAppRouterIPC, setupAppTabIPC } from './IPC';
+} from './pathResolver.js';
+import { createBrowserContentView } from './browserContentView/index.js';
+import { TabManager } from './TabManager/index.js';
+import { setupAppRouterIPC, setupAppTabIPC } from './IPC/index.js';
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([

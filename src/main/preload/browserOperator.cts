@@ -1,4 +1,7 @@
-import { contextBridge, ipcRenderer } from 'electron';
+// preload 是跑在 browser 環境，所以這邊要使用 commonjs 的寫法，pathResolver 也是吃 `.cjs` 副檔名。
+
+const { contextBridge, ipcRenderer } = require('electron');
+
 
 function getProcessArgvValue(key: string) {
   const arg = process.argv.find((arg) => arg.startsWith(`--${key}=`));

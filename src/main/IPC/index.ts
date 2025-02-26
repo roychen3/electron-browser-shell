@@ -1,2 +1,2 @@
-export { setupAppRouterIPC } from './setupAppRouterIPC';
-export { setupAppTabIPC } from './setupAppTabIPC';
+export { setupAppRouterIPC } from './setupAppRouterIPC.js';
+export { setupAppTabIPC } from './setupAppTabIPC.js';

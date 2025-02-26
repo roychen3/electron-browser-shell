@@ -1,2 +1,2 @@
-export type { Tab, TabService } from './types';
-export { TabManager } from './TabManager';
+export type { Tab, TabService } from './types.js';
+export { TabManager } from './TabManager.js';

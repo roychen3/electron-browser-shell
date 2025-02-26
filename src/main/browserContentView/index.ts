@@ -1,7 +1,7 @@
 import { WebContentsView } from 'electron';
 
-import { getBrowserOperatorPreloadPath } from '../pathResolver';
-import { TabManager } from '../TabManager';
+import { getBrowserOperatorPreloadPath } from '../pathResolver.js';
+import { TabManager } from '../TabManager/index.js';
 
 export const createBrowserContentView = ({
   tabId,

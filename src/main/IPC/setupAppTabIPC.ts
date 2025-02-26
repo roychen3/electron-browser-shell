@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 
-import { Tab, TabManager } from '../TabManager';
+import { Tab, TabManager } from '../TabManager/index.js';
 
 export function setupAppTabIPC(tabManager: TabManager) {
   ipcMain.removeHandler('get-tabs');

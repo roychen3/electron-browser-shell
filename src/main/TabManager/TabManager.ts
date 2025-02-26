@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import type { Tab, TabService } from './types';
+import type { Tab, TabService } from './types.js';
 
 export class TabManager implements TabService {
   private _emitter = new EventEmitter();

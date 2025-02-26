@@ -2,6 +2,7 @@
   "name": "specialized-browser",
   "version": "1.0.0",
   "main": "dist/src/main/index.js",
+  "type": "module",
   "workspaces": [
     "src/ui/browser-shell",
     "src/ui/authenticator"
