@@ -13,8 +13,6 @@ export const createBrowserContentView = ({
 }): WebContentsView => {
   const instance = new WebContentsView({
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
       preload: getBrowserOperatorPreloadPath(),
       additionalArguments: [`--tab-id=${tabId}`],
     },

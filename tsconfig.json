@@ -17,6 +17,7 @@
   },
   "include": [
     "src/main/**/*",
+    "src/types.d.ts",
   ],
   "exclude": [
     "node_modules",

@@ -29,7 +29,7 @@ declare global {
       ) => Promise<ReturnType<TabService['setActiveTabId']>>;
       getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
 
-      getOwnTabId: () => Promise<string>;
+      getOwnTabId: () => string | null;
     };
   }
 }

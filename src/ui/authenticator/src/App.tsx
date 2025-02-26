@@ -75,7 +75,7 @@ const navigate = (url: string) => {
 
 const setInitUrl = async () => {
   console.log('-- setInitUrl ----');
-  const tabId = await window.electronAPI.getOwnTabId();
+  const tabId = window.electronAPI.getOwnTabId();
   const tab = await window.electronAPI.getTabById(tabId || '');
   navigate(tab?.url || '');
 };
