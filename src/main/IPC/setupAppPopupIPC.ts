@@ -1,5 +1,8 @@
 import { ipcMain, BrowserWindow } from 'electron';
-import { BROWSER_SHELL_HEIGHT } from '../constants';
+import {
+  BROWSER_SHELL_HEIGHT,
+  BROWSER_AVATAR_MENU_DEV_URL,
+} from '../constants';
 
 export function setupAppPopupIPC(mainWindow: BrowserWindow) {
   ipcMain.removeHandler('open-popup');
@@ -18,7 +21,7 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
       });
 
       if (type === 'avatar-menu') {
-        popupWindow.webContents.loadURL('https://vite.dev/');
+        popupWindow.webContents.loadURL(BROWSER_AVATAR_MENU_DEV_URL);
       }
 
       popupWindow.webContents.once('did-finish-load', async () => {
