@@ -33,6 +33,19 @@ declare global {
         options?: Partial<{
           size: { width: number; height: number };
           position: { x: number; y: number };
+          placement:
+            | 'left'
+            | 'leftTop'
+            | 'leftBottom'
+            | 'right'
+            | 'rightTop'
+            | 'rightBottom'
+            | 'top'
+            | 'topLeft'
+            | 'topRight'
+            | 'bottom'
+            | 'bottomLeft'
+            | 'bottomRight';
         }>
       ) => Promise<void>;
     };

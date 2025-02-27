@@ -26,10 +26,17 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
 
       popupWindow.webContents.once('did-finish-load', async () => {
         console.log('---- popupWindow once [did-finish-load] ------');
-
+        const {
+          x: mainWinX,
+          y: mainWinY,
+          height: mainWinHeight,
+        } = mainWindow.getBounds();
         const { width, height } =
           await popupWindow.webContents.executeJavaScript(
-            `(${() => {
+            `(${async () => {
+              // wait for SPA page render
+              await Promise.resolve(null);
+
               const body = document.body;
               return {
                 width: body.scrollWidth,
@@ -38,14 +45,87 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
             }})()`
           );
 
-        const {
-          x: mainWinX,
-          y: mainWinY,
-          height: mainWinHeight,
-        } = mainWindow.getBounds();
+        const formatPosition = () => {
+          const placement = options?.placement || 'left';
+          const targetX = options?.position?.x || 0;
+          const targetY = options?.position?.y || 0;
+          switch (placement) {
+            case 'leftTop':
+              return {
+                x: mainWinX + targetX - width,
+                y: mainWinY + targetY,
+              };
+            case 'left':
+              return {
+                x: mainWinX + targetX - width,
+                y: mainWinY + targetY - height / 2,
+              };
+            case 'leftBottom':
+              return {
+                x: mainWinX + targetX - width,
+                y: mainWinY + targetY - height,
+              };
+
+            case 'topLeft':
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY - height,
+              };
+            case 'top':
+              return {
+                x: mainWinX + targetX - width / 2,
+                y: mainWinY + targetY - height,
+              };
+            case 'topRight':
+              return {
+                x: mainWinX + targetX - width,
+                y: mainWinY + targetY - height,
+              };
+
+            case 'rightTop':
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY,
+              };
+            case 'right':
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY - height / 2,
+              };
+            case 'rightBottom':
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY - height,
+              };
+
+            case 'bottomLeft':
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY,
+              };
+            case 'bottom':
+              return {
+                x: mainWinX + targetX - width / 2,
+                y: mainWinY + targetY,
+              };
+            case 'bottomRight':
+              return {
+                x: mainWinX + targetX - width,
+                y: mainWinY + targetY,
+              };
+
+            default:
+              return {
+                x: mainWinX + targetX,
+                y: mainWinY + targetY,
+              };
+          }
+        };
+        const { x, y } = formatPosition();
+
         popupWindow.setBounds({
-          x: mainWinX + (options?.position?.x || 0),
-          y: mainWinY + (options?.position?.y || 0),
+          x,
+          y,
           width,
           height: Math.min(mainWinHeight - BROWSER_SHELL_HEIGHT - 50, height),
         });
