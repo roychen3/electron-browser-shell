@@ -10,9 +10,7 @@ declare global {
       browserReload: () => Promise<void>;
 
       getTabs: () => Promise<ReturnType<TabService['getTabs']>>;
-      getTabById: (
-        id: string
-      ) => Promise<ReturnType<TabService['getTabById']>>;
+      getTabById: (id: string) => Promise<ReturnType<TabService['getTabById']>>;
       createTab: (
         value?: Partial<Tab>
       ) => Promise<ReturnType<TabService['createTab']>>;
@@ -28,8 +26,15 @@ declare global {
         id: string
       ) => Promise<ReturnType<TabService['setActiveTabId']>>;
       getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
-
       getOwnTabId: () => string | null;
+
+      openPopup: (
+        type: string,
+        options?: Partial<{
+          size: { width: number; height: number };
+          position: { x: number; y: number };
+        }>
+      ) => Promise<void>;
     };
   }
 }

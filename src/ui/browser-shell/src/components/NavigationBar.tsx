@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { IoArrowBack, IoArrowForward, IoReload } from 'react-icons/io5';
 
-export interface NavigationBarProps {
+export interface NavigationBarProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'value' | 'onSubmit'> {
   value?: string;
   onUrlChange?: (url: string) => void;
   onSubmit?: (url: string) => void;
@@ -10,6 +11,7 @@ export default function NavigationBar({
   value,
   onUrlChange: onUrlChangeProps,
   onSubmit: onSubmitProps,
+  ...props
 }: NavigationBarProps) {
   const [innerUrl, setInnerUrl] = useState(value || '');
   const url = value || innerUrl;
@@ -25,7 +27,7 @@ export default function NavigationBar({
   };
 
   return (
-    <div className="p-2">
+    <div {...props} className={`p-2 ${props.className}`}>
       <div className="flex items-center gap-1">
         {/* Navigation buttons */}
         <button

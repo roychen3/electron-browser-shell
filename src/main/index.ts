@@ -13,7 +13,7 @@ import {
 } from './pathResolver';
 import { createBrowserContentView } from './browserContentView';
 import { TabManager } from './TabManager';
-import { setupAppRouterIPC, setupAppTabIPC } from './IPC';
+import { setupAppRouterIPC, setupAppTabIPC, setupAppPopupIPC } from './IPC';
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -26,6 +26,8 @@ function createWindow(): void {
     width: 1200,
     height: 800,
   });
+
+  setupAppPopupIPC(win);
 
   // Create browser shell view
   const browserShellView = new WebContentsView({

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { TabBar, NavigationBar } from './components';
+import { TabBar, NavigationBar, Avatar } from './components';
 
 interface Tab {
   id: string;
@@ -32,7 +32,7 @@ function App() {
     if (tabId === activeTabId) {
       const newActiveTabId = newTabs[newTabs.length - 1].id;
       await window.electronAPI.setActiveTabId(newActiveTabId);
-      
+
       const activeTab = tabs.find((tab) => tab.id === newActiveTabId);
       if (!activeTab) {
         throw new Error('Active tab not found');
@@ -106,11 +106,15 @@ function App() {
         closeTab={closeTab}
         addNewTab={addNewTab}
       />
-      <NavigationBar
-        value={url}
-        onUrlChange={handleUrlChange}
-        onSubmit={handleUrlSubmit}
-      />
+      <div className="flex items-center pr-2">
+        <NavigationBar
+          className="flex-1"
+          value={url}
+          onUrlChange={handleUrlChange}
+          onSubmit={handleUrlSubmit}
+        />
+        <Avatar />
+      </div>
     </div>
   );
 }
