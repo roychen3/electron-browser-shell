@@ -3,4 +3,4 @@ export {
   default as NavigationBar,
   type NavigationBarProps,
 } from './NavigationBar';
-export { default as Avatar, type AvatarProps } from './Avatar';
+export { default as Avatar } from './Avatar';
