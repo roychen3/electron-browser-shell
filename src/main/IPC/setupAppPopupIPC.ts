@@ -1,8 +1,13 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, app } from 'electron';
+
 import {
   BROWSER_SHELL_HEIGHT,
   BROWSER_AVATAR_MENU_DEV_URL,
 } from '../constants';
+import {
+  getBrowserOperatorPreloadPath,
+  getBrowserAvatarMenuPath,
+} from '../pathResolver';
 
 export function setupAppPopupIPC(mainWindow: BrowserWindow) {
   ipcMain.removeHandler('open-popup');
@@ -18,10 +23,17 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
         alwaysOnTop: true,
         frame: false,
         resizable: false,
+        webPreferences: {
+          preload: getBrowserOperatorPreloadPath(),
+        },
       });
 
       if (type === 'avatar-menu') {
-        popupWindow.webContents.loadURL(BROWSER_AVATAR_MENU_DEV_URL);
+        if (app.isPackaged) {
+          popupWindow.webContents.loadURL('app://browser-avatar-menu');
+        } else {
+          popupWindow.webContents.loadURL(BROWSER_AVATAR_MENU_DEV_URL);
+        }
       }
 
       popupWindow.webContents.once('did-finish-load', async () => {
@@ -129,6 +141,16 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
           width,
           height: Math.min(mainWinHeight - BROWSER_SHELL_HEIGHT - 50, height),
         });
+
+        // If you want debug for popup, uncomment the following code
+        // popupWindow.setBounds({
+        //   x,
+        //   y,
+        //   width: 600,
+        //   height: 600,
+        // });
+        // popupWindow.webContents.toggleDevTools();
+
         popupWindow.show();
       });
 

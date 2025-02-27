@@ -8,6 +8,9 @@ export const getAppUiPath = (restPath = '') =>
 export const getBrowserShellPath = () =>
   path.join(__dirname, '../ui/browser-shell/index.html');
 
+export const getBrowserAvatarMenuPath = () =>
+  path.join(__dirname, '../ui/browser-avatar-menu/index.html');
+
 export const getAuthenticatorPath = () =>
   path.join(__dirname, '../ui/authenticator/index.html');
 
