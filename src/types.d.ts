@@ -48,6 +48,7 @@ declare global {
             | 'bottomRight';
         }>
       ) => Promise<void>;
+      closePopup: (type: string) => Promise<void>;
     };
   }
 }

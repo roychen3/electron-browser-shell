@@ -26,6 +26,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActiveTab: () => ipcRenderer.invoke('get-active-tab'),
   getOwnTabId: () => getProcessArgvValue('tab-id'),
 
-  openPopup: (type, options) =>
-    ipcRenderer.invoke('open-popup', type, options),
+  openPopup: (type, options) => ipcRenderer.invoke('open-popup', type, options),
+  closePopup: (type) => ipcRenderer.invoke('close-popup', type),
 } satisfies Window['electronAPI']);

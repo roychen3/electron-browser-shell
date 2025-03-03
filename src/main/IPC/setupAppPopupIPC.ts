@@ -4,12 +4,11 @@ import {
   BROWSER_SHELL_HEIGHT,
   BROWSER_AVATAR_MENU_DEV_URL,
 } from '../constants';
-import {
-  getBrowserOperatorPreloadPath,
-  getBrowserAvatarMenuPath,
-} from '../pathResolver';
+import { getBrowserOperatorPreloadPath } from '../pathResolver';
 
 export function setupAppPopupIPC(mainWindow: BrowserWindow) {
+  const tempPopupWindow = new Map<string, BrowserWindow>();
+
   ipcMain.removeHandler('open-popup');
   ipcMain.handle(
     'open-popup',
@@ -27,6 +26,8 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
           preload: getBrowserOperatorPreloadPath(),
         },
       });
+
+      tempPopupWindow.set(type, popupWindow);
 
       if (type === 'avatar-menu') {
         if (app.isPackaged) {
@@ -156,8 +157,29 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
 
       popupWindow.once('blur', () => {
         console.log('---- popupWindow on [blur] ------');
+        tempPopupWindow.delete(type);
         popupWindow.close();
       });
+    }
+  );
+
+  ipcMain.removeHandler('close-popup');
+  ipcMain.handle(
+    'close-popup',
+    async (
+      _event,
+      ...args: Parameters<Window['electronAPI']['closePopup']>
+    ) => {
+      console.log('-- ipcMain.handle(close-popup) ----', args);
+      const [type] = args;
+
+      if (tempPopupWindow.has(type)) {
+        const popupWindow = tempPopupWindow.get(type)!;
+        popupWindow.close();
+        tempPopupWindow.delete(type);
+      } else {
+        console.warn(`---- Popup window with type ${type} does not exist.`);
+      }
     }
   );
 }
