@@ -1,4 +1,7 @@
-export class AuthStore {
+import type { Auth } from './interface'
+
+
+export class AuthStore implements Auth {
   private _token = '';
 
   getToken() {

@@ -1,4 +1,4 @@
-import { useAuth } from './auth';
+import { useAuth } from './auth/auth-react';
 
 function App() {
   const { token } = useAuth();

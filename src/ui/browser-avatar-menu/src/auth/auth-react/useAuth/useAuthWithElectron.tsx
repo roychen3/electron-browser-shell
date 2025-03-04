@@ -1,8 +1,10 @@
 import { useSyncExternalStore } from 'react';
 
-import { authStore } from './store';
+import type { Auth } from '../interface';
 
-export function useAuth() {
+import { authStore } from '../../core';
+
+export function useAuth(): Auth {
   const token = useSyncExternalStore(
     (listener) => {
       const unSubscribe = window.electronAPI.onTokenUpdate((token) => {
@@ -14,6 +16,7 @@ export function useAuth() {
     },
     () => authStore.getToken()
   );
+  const setToken = (token: string) => authStore.setToken(token);
 
-  return { token };
+  return { token, setToken };
 }
