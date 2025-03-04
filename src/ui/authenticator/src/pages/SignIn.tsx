@@ -4,10 +4,12 @@ export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle sign in logic here
-    console.log('Sign in attempt with:', { email })
+
+    // Using email as mock token
+    const token = email
+    await window.electronAPI.setToken(token)
   }
 
   return (

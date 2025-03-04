@@ -1,0 +1,1 @@
+export { default as AuthGuard, type AuthGuardProps } from './AuthGuard';

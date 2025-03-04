@@ -28,8 +28,7 @@ declare global {
       getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
       getOwnTabId: () => string | null;
 
-      openPopup: (
-        type: string,
+      openAvatarMenuPopup: (
         options?: Partial<{
           size: { width: number; height: number };
           position: { x: number; y: number };
@@ -48,7 +47,11 @@ declare global {
             | 'bottomRight';
         }>
       ) => Promise<void>;
-      closePopup: (type: string) => Promise<void>;
+      closeAvatarMenuPopup: () => Promise<void>;
+
+      getToken: () => Promise<string>;
+      setToken: (token: string) => Promise<void>;
+      onTokenUpdate: (callback: (token: string) => void) => () => void;
     };
   }
 }

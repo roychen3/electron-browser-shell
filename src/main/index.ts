@@ -13,7 +13,12 @@ import {
 } from './pathResolver';
 import { createBrowserContentView } from './browserContentView';
 import { TabManager } from './TabManager';
-import { setupAppRouterIPC, setupAppTabIPC, setupAppPopupIPC } from './IPC';
+import {
+  setupAppRouterIPC,
+  setupAppTabIPC,
+  setupAppPopupIPC,
+  setupAppAuthIPC,
+} from './IPC';
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -26,8 +31,6 @@ function createWindow(): void {
     width: 1200,
     height: 800,
   });
-
-  setupAppPopupIPC(win);
 
   // Create browser shell view
   const browserShellView = new WebContentsView({
@@ -152,7 +155,15 @@ function createWindow(): void {
   tabManager.createTab({ id: DEFAULT_TAB_ID, url: DEFAULT_URL });
   tabManager.setActiveTabId(DEFAULT_TAB_ID);
 
+  const currentOpenPopupMaps = new Map<string, BrowserWindow>();
+
+  setupAppPopupIPC(win, currentOpenPopupMaps);
   setupAppRouterIPC(getActiveBrowserContentView);
+  setupAppAuthIPC({
+    browserShellView,
+    getAvatarMenuWindow: () => currentOpenPopupMaps.get('avatar-menu'),
+    getCurrentBrowserContentView: getActiveBrowserContentView,
+  });
 
   win.on('resize', () => {
     updateShellViewBounds();
@@ -169,6 +180,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   protocol.handle('app', async (req) => {
     console.log('-- handle protocol: app ----');
+    console.log('---- req.url:', req.url);
     try {
       const uUrl = new URL(req.url);
       const appName = uUrl.host;

@@ -1,10 +1,16 @@
-import { createMemoryRouter, Link, RouterProvider } from 'react-router-dom';
+import { createMemoryRouter, Link, Outlet, RouterProvider } from 'react-router-dom';
 
 import SignIn from './pages/SignIn';
 import PageNotFound from './pages/PageNotFound';
+import { AuthGuard } from './components';
 
 const router = createMemoryRouter([
   {
+    element: (
+      <AuthGuard>
+        <Outlet />
+      </AuthGuard>
+    ),
     children: [
       {
         path: '/sign-in',
