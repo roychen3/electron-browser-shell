@@ -135,6 +135,8 @@ export function setupAppPopupIPC(
         alwaysOnTop: true,
         frame: false,
         resizable: false,
+        minWidth: 192,
+        minHeight: 44,
         webPreferences: {
           preload: getBrowserOperatorPreloadPath(),
         },
@@ -149,7 +151,14 @@ export function setupAppPopupIPC(
           await popupWindow.webContents.executeJavaScript(
             `(${async () => {
               // wait for SPA page render
-              await Promise.resolve(null);
+              await new Promise((resolve) => {
+                setInterval(() => {
+                  const root = document.querySelector('#root');
+                  if (root && root.hasChildNodes()) {
+                    resolve(null);
+                  }
+                });
+              });
 
               const body = document.body;
               return {
