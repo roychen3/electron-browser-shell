@@ -14,5 +14,8 @@ export const getBrowserAvatarMenuPath = () =>
 export const getAuthenticatorPath = () =>
   path.join(__dirname, '../ui/authenticator/index.html');
 
+export const getProtectedApplicationPath = () =>
+  path.join(__dirname, '../ui/protected-application/index.html');
+
 export const getBrowserOperatorPreloadPath = () =>
   path.join(__dirname, './preload/browserOperator.js');

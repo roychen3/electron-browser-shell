@@ -10,7 +10,7 @@ function App() {
   const handleSignIn = async () => {
     const to = import.meta.env.PROD
       ? 'app://authenticator/?pathname=/sign-in'
-      : 'http://localhost:3010/sign-in';
+      : 'http://localhost:3000/sign-in';
     window.electronAPI.browserNavigateTo(to);
     closeThisPopup();
   };

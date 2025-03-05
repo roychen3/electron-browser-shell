@@ -15,13 +15,6 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": [
-    "src/main/**/*",
-    "src/types.d.ts",
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/ui/browser-shell"
-  ]
+  "include": ["src/main/**/*", "src/types.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }
