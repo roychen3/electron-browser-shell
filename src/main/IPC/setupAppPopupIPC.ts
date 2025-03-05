@@ -115,6 +115,10 @@ const formatPosition = ({
   }
 };
 
+export enum PopupName {
+  AvatarMenu = 'avatar-menu-popup',
+}
+
 export function setupAppPopupIPC(
   mainWindow: BrowserWindow,
   currentOpenPopupMaps: Map<string, BrowserWindow>
@@ -141,7 +145,7 @@ export function setupAppPopupIPC(
           preload: getBrowserOperatorPreloadPath(),
         },
       });
-      currentOpenPopupMaps.set('avatar-menu', popupWindow);
+      currentOpenPopupMaps.set(PopupName.AvatarMenu, popupWindow);
 
       popupWindow.webContents.once('did-finish-load', async () => {
         console.log('---- popupWindow once [did-finish-load] ------');
@@ -167,7 +171,6 @@ export function setupAppPopupIPC(
               };
             }})()`
           );
-        console.log('---- width, height ----', width, height);
 
         const { x, y } = formatPosition({
           mainWinBounds: mainWinBounds,
@@ -205,7 +208,7 @@ export function setupAppPopupIPC(
       popupWindow.once('blur', () => {
         console.log('---- popupWindow once [blur] ------');
         popupWindow.close();
-        currentOpenPopupMaps.delete('avatar-menu');
+        currentOpenPopupMaps.delete(PopupName.AvatarMenu);
       });
 
       if (app.isPackaged) {
@@ -224,10 +227,10 @@ export function setupAppPopupIPC(
       ...args: Parameters<Window['electronAPI']['closeAvatarMenuPopup']>
     ) => {
       console.log('-- ipcMain.handle(close-avatar-menu-popup) ----', args);
-      if (currentOpenPopupMaps.has('avatar-menu')) {
-        const popupWindow = currentOpenPopupMaps.get('avatar-menu')!;
+      if (currentOpenPopupMaps.has(PopupName.AvatarMenu)) {
+        const popupWindow = currentOpenPopupMaps.get(PopupName.AvatarMenu)!;
         popupWindow.close();
-        currentOpenPopupMaps.delete('avatar-menu');
+        currentOpenPopupMaps.delete(PopupName.AvatarMenu);
       }
     }
   );
