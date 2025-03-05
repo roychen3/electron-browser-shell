@@ -6,15 +6,132 @@ import {
 } from '../constants';
 import { getBrowserOperatorPreloadPath } from '../pathResolver';
 
-export function setupAppPopupIPC(mainWindow: BrowserWindow) {
-  const tempPopupWindow = new Map<string, BrowserWindow>();
+type Placement =
+  | 'left'
+  | 'leftTop'
+  | 'leftBottom'
+  | 'right'
+  | 'rightTop'
+  | 'rightBottom'
+  | 'top'
+  | 'topLeft'
+  | 'topRight'
+  | 'bottom'
+  | 'bottomLeft'
+  | 'bottomRight';
 
-  ipcMain.removeHandler('open-popup');
+type Rectangle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+const formatPosition = ({
+  mainWinBounds,
+  targetBounds,
+  placement,
+}: {
+  mainWinBounds: Rectangle;
+  targetBounds: Rectangle;
+  placement: Placement;
+}) => {
+  const mainWinX = mainWinBounds.x;
+  const mainWinY = mainWinBounds.y;
+  const targetX = targetBounds.x;
+  const targetY = targetBounds.y;
+  const targetWidth = targetBounds.width;
+  const targetHeight = targetBounds.height;
+
+  switch (placement) {
+    case 'leftTop':
+      return {
+        x: mainWinX + targetX - targetWidth,
+        y: mainWinY + targetY,
+      };
+    case 'left':
+      return {
+        x: mainWinX + targetX - targetWidth,
+        y: mainWinY + targetY - targetHeight / 2,
+      };
+    case 'leftBottom':
+      return {
+        x: mainWinX + targetX - targetWidth,
+        y: mainWinY + targetY - targetHeight,
+      };
+
+    case 'topLeft':
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY - targetHeight,
+      };
+    case 'top':
+      return {
+        x: mainWinX + targetX - targetWidth / 2,
+        y: mainWinY + targetY - targetHeight,
+      };
+    case 'topRight':
+      return {
+        x: mainWinX + targetX - targetWidth,
+        y: mainWinY + targetY - targetHeight,
+      };
+
+    case 'rightTop':
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY,
+      };
+    case 'right':
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY - targetHeight / 2,
+      };
+    case 'rightBottom':
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY - targetHeight,
+      };
+
+    case 'bottomLeft':
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY,
+      };
+    case 'bottom':
+      return {
+        x: mainWinX + targetX - targetWidth / 2,
+        y: mainWinY + targetY,
+      };
+    case 'bottomRight':
+      return {
+        x: mainWinX + targetX - targetWidth,
+        y: mainWinY + targetY,
+      };
+
+    default:
+      return {
+        x: mainWinX + targetX,
+        y: mainWinY + targetY,
+      };
+  }
+};
+
+export enum PopupName {
+  AvatarMenu = 'avatar-menu-popup',
+}
+
+export function setupAppPopupIPC(
+  mainWindow: BrowserWindow,
+  currentOpenPopupMaps: Map<string, BrowserWindow>
+) {
+  ipcMain.removeHandler('open-avatar-menu-popup');
   ipcMain.handle(
-    'open-popup',
-    async (_event, ...args: Parameters<Window['electronAPI']['openPopup']>) => {
-      console.log('-- ipcMain.handle(open-popup) ----', args);
-      const [type, options] = args;
+    'open-avatar-menu-popup',
+    async (
+      _event,
+      ...args: Parameters<Window['electronAPI']['openAvatarMenuPopup']>
+    ) => {
+      console.log('-- ipcMain.handle(open-avatar-menu-popup) ----', args);
+      const [options] = args;
 
       const popupWindow = new BrowserWindow({
         parent: mainWindow,
@@ -22,33 +139,30 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
         alwaysOnTop: true,
         frame: false,
         resizable: false,
+        minWidth: 192,
+        minHeight: 44,
         webPreferences: {
           preload: getBrowserOperatorPreloadPath(),
         },
       });
-
-      tempPopupWindow.set(type, popupWindow);
-
-      if (type === 'avatar-menu') {
-        if (app.isPackaged) {
-          popupWindow.webContents.loadURL('app://browser-avatar-menu');
-        } else {
-          popupWindow.webContents.loadURL(BROWSER_AVATAR_MENU_DEV_URL);
-        }
-      }
+      currentOpenPopupMaps.set(PopupName.AvatarMenu, popupWindow);
 
       popupWindow.webContents.once('did-finish-load', async () => {
         console.log('---- popupWindow once [did-finish-load] ------');
-        const {
-          x: mainWinX,
-          y: mainWinY,
-          height: mainWinHeight,
-        } = mainWindow.getBounds();
+
+        const mainWinBounds = mainWindow.getBounds();
         const { width, height } =
           await popupWindow.webContents.executeJavaScript(
             `(${async () => {
               // wait for SPA page render
-              await Promise.resolve(null);
+              await new Promise((resolve) => {
+                setInterval(() => {
+                  const root = document.querySelector('#root');
+                  if (root && root.hasChildNodes()) {
+                    resolve(null);
+                  }
+                });
+              });
 
               const body = document.body;
               return {
@@ -58,92 +172,28 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
             }})()`
           );
 
-        const formatPosition = () => {
-          const placement = options?.placement || 'left';
-          const targetX = options?.position?.x || 0;
-          const targetY = options?.position?.y || 0;
-          switch (placement) {
-            case 'leftTop':
-              return {
-                x: mainWinX + targetX - width,
-                y: mainWinY + targetY,
-              };
-            case 'left':
-              return {
-                x: mainWinX + targetX - width,
-                y: mainWinY + targetY - height / 2,
-              };
-            case 'leftBottom':
-              return {
-                x: mainWinX + targetX - width,
-                y: mainWinY + targetY - height,
-              };
-
-            case 'topLeft':
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY - height,
-              };
-            case 'top':
-              return {
-                x: mainWinX + targetX - width / 2,
-                y: mainWinY + targetY - height,
-              };
-            case 'topRight':
-              return {
-                x: mainWinX + targetX - width,
-                y: mainWinY + targetY - height,
-              };
-
-            case 'rightTop':
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY,
-              };
-            case 'right':
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY - height / 2,
-              };
-            case 'rightBottom':
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY - height,
-              };
-
-            case 'bottomLeft':
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY,
-              };
-            case 'bottom':
-              return {
-                x: mainWinX + targetX - width / 2,
-                y: mainWinY + targetY,
-              };
-            case 'bottomRight':
-              return {
-                x: mainWinX + targetX - width,
-                y: mainWinY + targetY,
-              };
-
-            default:
-              return {
-                x: mainWinX + targetX,
-                y: mainWinY + targetY,
-              };
-          }
-        };
-        const { x, y } = formatPosition();
+        const { x, y } = formatPosition({
+          mainWinBounds: mainWinBounds,
+          targetBounds: {
+            x: options?.position?.x || 0,
+            y: options?.position?.y || 0,
+            width,
+            height,
+          },
+          placement: options?.placement || 'left',
+        });
 
         popupWindow.setBounds({
           x,
           y,
           width,
-          height: Math.min(mainWinHeight - BROWSER_SHELL_HEIGHT - 50, height),
+          height: Math.min(
+            mainWinBounds.height - BROWSER_SHELL_HEIGHT - 50,
+            height
+          ),
         });
 
-        // If you want debug for popup, uncomment the following code
+        // // If you want debug for popup, uncomment the following code
         // popupWindow.setBounds({
         //   x,
         //   y,
@@ -156,29 +206,31 @@ export function setupAppPopupIPC(mainWindow: BrowserWindow) {
       });
 
       popupWindow.once('blur', () => {
-        console.log('---- popupWindow on [blur] ------');
-        tempPopupWindow.delete(type);
+        console.log('---- popupWindow once [blur] ------');
         popupWindow.close();
+        currentOpenPopupMaps.delete(PopupName.AvatarMenu);
       });
+
+      if (app.isPackaged) {
+        popupWindow.webContents.loadURL('app://browser-avatar-menu');
+      } else {
+        popupWindow.webContents.loadURL(BROWSER_AVATAR_MENU_DEV_URL);
+      }
     }
   );
 
-  ipcMain.removeHandler('close-popup');
+  ipcMain.removeHandler('close-avatar-menu-popup');
   ipcMain.handle(
-    'close-popup',
+    'close-avatar-menu-popup',
     async (
       _event,
-      ...args: Parameters<Window['electronAPI']['closePopup']>
+      ...args: Parameters<Window['electronAPI']['closeAvatarMenuPopup']>
     ) => {
-      console.log('-- ipcMain.handle(close-popup) ----', args);
-      const [type] = args;
-
-      if (tempPopupWindow.has(type)) {
-        const popupWindow = tempPopupWindow.get(type)!;
+      console.log('-- ipcMain.handle(close-avatar-menu-popup) ----', args);
+      if (currentOpenPopupMaps.has(PopupName.AvatarMenu)) {
+        const popupWindow = currentOpenPopupMaps.get(PopupName.AvatarMenu)!;
         popupWindow.close();
-        tempPopupWindow.delete(type);
-      } else {
-        console.warn(`---- Popup window with type ${type} does not exist.`);
+        currentOpenPopupMaps.delete(PopupName.AvatarMenu);
       }
     }
   );

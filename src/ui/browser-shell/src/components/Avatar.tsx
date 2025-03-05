@@ -4,7 +4,7 @@ export default function Avatar() {
   const toggleMenu: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
 
-    window.electronAPI.openPopup('avatar-menu', {
+    window.electronAPI.openAvatarMenuPopup({
       // left
       // position: { x: rect.left, y: rect.top + rect.height },
       // placement: 'leftTop',

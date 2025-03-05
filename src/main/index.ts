@@ -11,9 +11,14 @@ import {
   getBrowserOperatorPreloadPath,
   getBrowserShellPath,
 } from './pathResolver';
-import { createBrowserContentView } from './browserContentView';
 import { TabManager } from './TabManager';
-import { setupAppRouterIPC, setupAppTabIPC, setupAppPopupIPC } from './IPC';
+import {
+  setupAppRouterIPC,
+  setupAppTabIPC,
+  setupAppPopupIPC,
+  setupAppAuthIPC,
+} from './IPC';
+import { PopupName } from './IPC/setupAppPopupIPC';
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -21,22 +26,17 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 function createWindow(): void {
-  // Create the main window
-  const win = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
   });
 
-  setupAppPopupIPC(win);
-
-  // Create browser shell view
   const browserShellView = new WebContentsView({
     webPreferences: {
       preload: getBrowserOperatorPreloadPath(),
     },
   });
 
-  // Load content into views
   if (app.isPackaged) {
     browserShellView.webContents.loadFile(getBrowserShellPath());
   } else {
@@ -44,7 +44,7 @@ function createWindow(): void {
   }
 
   const updateShellViewBounds = () => {
-    const winBounds = win.getContentBounds();
+    const winBounds = mainWindow.getContentBounds();
     browserShellView.setBounds({
       x: 0,
       y: 0,
@@ -57,7 +57,6 @@ function createWindow(): void {
 
   const browserContentViewsMap = new Map<string, WebContentsView>();
   const tabManager = new TabManager();
-  setupAppTabIPC(tabManager);
 
   const getActiveBrowserContentView = () => {
     const activeTabId = tabManager.getActiveTabId();
@@ -68,11 +67,23 @@ function createWindow(): void {
     return currentBrowserContentView;
   };
 
-  const updateContentViewBounds = (contentView: WebContentsView) => {
-    const winBounds = win.getContentBounds();
+  const currentOpenPopupMaps = new Map<string, BrowserWindow>();
 
-    const currentBrowserContentView = contentView;
-    currentBrowserContentView.setBounds({
+  setupAppTabIPC(tabManager);
+  setupAppRouterIPC(getActiveBrowserContentView);
+  setupAppPopupIPC(mainWindow, currentOpenPopupMaps);
+  setupAppAuthIPC({
+    browserShellView,
+    getAvatarMenuWindow: () => currentOpenPopupMaps.get(PopupName.AvatarMenu),
+    getCurrentBrowserContentView: getActiveBrowserContentView,
+  });
+
+  const updateBrowserContentViewBounds = (
+    browserContentView: WebContentsView
+  ) => {
+    const winBounds = mainWindow.getContentBounds();
+
+    browserContentView.setBounds({
       x: 0,
       y: BROWSER_SHELL_HEIGHT,
       width: winBounds.width,
@@ -83,24 +94,41 @@ function createWindow(): void {
   tabManager.onCreateTab((tab) => {
     console.log('-- tabManager.onCreateTab ----');
 
-    const newBrowserContentView = createBrowserContentView({
-      tabId: tab.id,
-      tabManager,
-      browserShellView,
+    const newBrowserContentView = new WebContentsView({
+      webPreferences: {
+        preload: getBrowserOperatorPreloadPath(),
+        additionalArguments: [`--tab-id=${tab.id}`],
+      },
     });
 
+    const onUpdateUrl = (url: string) => {
+      const currentTab = tabManager.getTabById(tab.id);
+      if (!currentTab) {
+        throw new Error('Tab not found');
+      }
+
+      const prevUrl = currentTab.url;
+      if (prevUrl !== url) {
+        tabManager.updateTabById(tab.id, { url });
+      }
+    };
+    // Subscribe to browser content view's navigation events
+    newBrowserContentView.webContents.on('did-navigate', (_event, url) => {
+      console.log('-- did-navigate ----');
+      onUpdateUrl?.(url);
+    });
+    newBrowserContentView.webContents.on(
+      'did-navigate-in-page',
+      (_event, url) => {
+        console.log('-- did-navigate-in-page ----');
+        onUpdateUrl?.(url);
+      }
+    );
+
+    newBrowserContentView.webContents.loadURL(tab.url);
     newBrowserContentView.setVisible(false);
-    win.contentView.addChildView(newBrowserContentView);
-    updateContentViewBounds(newBrowserContentView);
-    if (app.isPackaged) {
-      newBrowserContentView.webContents.loadURL(DEFAULT_URL);
-    } else {
-      newBrowserContentView.webContents.loadURL(
-        `${AUTHENTICATOR_DEV_URL}/feature-one`
-      );
-      // for dev
-      // newBrowserContentView.webContents.loadURL(DEFAULT_URL);
-    }
+    mainWindow.contentView.addChildView(newBrowserContentView);
+    updateBrowserContentViewBounds(newBrowserContentView);
     browserContentViewsMap.set(tab.id, newBrowserContentView);
   });
 
@@ -108,19 +136,21 @@ function createWindow(): void {
     console.log('-- tabManager.onUpdateTabById ----');
     console.log('---- newValue.url:', newValue.url);
     console.log('---- oldValue.url:', oldValue?.url);
-    const tabContentView = browserContentViewsMap.get(newValue.id);
+    const browserContentView = browserContentViewsMap.get(newValue.id);
     const urlEqual = oldValue?.url === newValue.url;
-    if (!urlEqual && tabContentView) {
+    if (!urlEqual && browserContentView) {
       console.log('------ send `update-url`');
-      tabContentView.webContents.send('update-url', newValue.url);
+      browserContentView.webContents.send('update-url', newValue.url);
+      browserShellView.webContents.send('update-url', newValue.url);
     }
   });
 
   tabManager.onDeleteTabById((id) => {
     console.log('-- tabManager.onDeleteTabById ----');
-    const tabContentView = browserContentViewsMap.get(id);
-    if (tabContentView) {
-      win.contentView.removeChildView(tabContentView);
+    const browserContentView = browserContentViewsMap.get(id);
+    if (browserContentView) {
+      mainWindow.contentView.removeChildView(browserContentView);
+      browserContentView.webContents.close();
       browserContentViewsMap.delete(id);
       if (browserContentViewsMap.size === 0) {
         app.quit();
@@ -130,16 +160,20 @@ function createWindow(): void {
 
   tabManager.onSetActiveTabId(({ newId, prevId }) => {
     console.log('-- tabManager.onSetActiveTabId ----');
-    const tabContentView = browserContentViewsMap.get(newId);
-    if (newId !== prevId && tabContentView) {
+    const browserContentView = browserContentViewsMap.get(newId);
+    if (!browserContentView) {
+      throw new Error('Current browser content view not found');
+    }
+
+    if (newId !== prevId) {
       tabManager.getTabs().forEach((tab) => {
-        const currentTabContentView = browserContentViewsMap.get(tab.id);
-        if (currentTabContentView) {
+        const currentContentView = browserContentViewsMap.get(tab.id);
+        if (currentContentView) {
           if (tab.id === newId) {
-            currentTabContentView.setVisible(true);
-            updateContentViewBounds(currentTabContentView);
+            currentContentView.setVisible(true);
+            updateBrowserContentViewBounds(currentContentView);
           } else {
-            currentTabContentView.setVisible(false);
+            currentContentView.setVisible(false);
           }
         }
       });
@@ -148,27 +182,26 @@ function createWindow(): void {
 
   // create default tab first
   const DEFAULT_TAB_ID = 'default-open-tab-id';
-  const DEFAULT_URL = 'app://authenticator/?pathname=/feature-one';
+  const DEFAULT_URL = app.isPackaged
+    ? 'app://authenticator/?pathname=/feature-one'
+    : `${AUTHENTICATOR_DEV_URL}/feature-one`;
   tabManager.createTab({ id: DEFAULT_TAB_ID, url: DEFAULT_URL });
   tabManager.setActiveTabId(DEFAULT_TAB_ID);
 
-  setupAppRouterIPC(getActiveBrowserContentView);
-
-  win.on('resize', () => {
+  mainWindow.on('resize', () => {
     updateShellViewBounds();
-    updateContentViewBounds(getActiveBrowserContentView());
+    updateBrowserContentViewBounds(getActiveBrowserContentView());
   });
 
-  // Add views to the window
-  win.contentView.addChildView(browserShellView);
+  mainWindow.contentView.addChildView(browserShellView);
 
-  // Set up application menu
   createApplicationMenu(browserShellView, getActiveBrowserContentView);
 }
 
 app.whenReady().then(() => {
   protocol.handle('app', async (req) => {
     console.log('-- handle protocol: app ----');
+    console.log('---- req.url:', req.url);
     try {
       const uUrl = new URL(req.url);
       const appName = uUrl.host;

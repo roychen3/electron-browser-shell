@@ -26,6 +26,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActiveTab: () => ipcRenderer.invoke('get-active-tab'),
   getOwnTabId: () => getProcessArgvValue('tab-id'),
 
-  openPopup: (type, options) => ipcRenderer.invoke('open-popup', type, options),
-  closePopup: (type) => ipcRenderer.invoke('close-popup', type),
+  openAvatarMenuPopup: (options) =>
+    ipcRenderer.invoke('open-avatar-menu-popup', options),
+  closeAvatarMenuPopup: () => ipcRenderer.invoke('close-avatar-menu-popup'),
+
+  getToken: () => ipcRenderer.invoke('get-token'),
+  setToken: async (token: string) => ipcRenderer.invoke('set-token', token),
+  onTokenUpdate: (callback) => {
+    const listener = (_event: any, token: string) => callback(token);
+    ipcRenderer.on('token-update', listener);
+    return () => ipcRenderer.removeListener('token-update', listener);
+  },
 } satisfies Window['electronAPI']);
