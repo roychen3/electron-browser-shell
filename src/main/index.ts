@@ -183,8 +183,8 @@ function createWindow(): void {
   // create default tab first
   const DEFAULT_TAB_ID = 'default-open-tab-id';
   const DEFAULT_URL = app.isPackaged
-    ? 'app://authenticator/?pathname=/feature-one'
-    : `${AUTHENTICATOR_DEV_URL}/feature-one`;
+    ? 'app://authenticator/?pathname=/sign-in'
+    : `${AUTHENTICATOR_DEV_URL}/sign-in`;
   tabManager.createTab({ id: DEFAULT_TAB_ID, url: DEFAULT_URL });
   tabManager.setActiveTabId(DEFAULT_TAB_ID);
 

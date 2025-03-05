@@ -9,7 +9,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { pathname } = useLocation();
 
   if (pathname === '/sign-in' && token) {
-    return <Navigate to="/feature-one" />;
+    return <Navigate to="/sign-up" />;
   }
   return <>{children}</>;
 }

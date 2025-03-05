@@ -1,16 +1,17 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function SignIn() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Using email as mock token
-    const token = email
-    await window.electronAPI.setToken(token)
-  }
+    const token = email;
+    await window.electronAPI.setToken(token);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -68,7 +69,18 @@ export default function SignIn() {
             </button>
           </div>
         </form>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link
+              to="/sign-up"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
-  )
+  );
 }
