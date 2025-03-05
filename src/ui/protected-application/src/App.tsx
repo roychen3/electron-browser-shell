@@ -1,9 +1,13 @@
+import { Layout } from './components';
+
+import Home from './pages/home';
+
 function App() {
   return (
-    <div>
-      <h2>Protected Application</h2>
-    </div>
-  )
+    <Layout>
+      <Home />
+    </Layout>
+  );
 }
 
-export default App
+export default App;
