@@ -1,4 +1,4 @@
-import { type Tab, type TabService } from './main/TabManager';
+import { type Tab, type TabService } from './main/TabService';
 
 declare global {
   interface Window {

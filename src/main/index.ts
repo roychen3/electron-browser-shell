@@ -11,7 +11,7 @@ import {
   getBrowserOperatorPreloadPath,
   getBrowserShellPath,
 } from './pathResolver';
-import { TabManager } from './TabManager';
+import { TabManager } from './TabService';
 import {
   setupAppRouterIPC,
   setupAppTabIPC,
