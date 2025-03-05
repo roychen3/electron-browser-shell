@@ -70,12 +70,14 @@ function createWindow(): void {
   const currentOpenPopupMaps = new Map<string, BrowserWindow>();
 
   setupAppTabIPC(tabManager);
-  setupAppRouterIPC(getActiveBrowserContentView);
+  setupAppRouterIPC(getActiveBrowserContentView, (id) =>
+    browserContentViewsMap.get(id)
+  );
   setupAppPopupIPC(mainWindow, currentOpenPopupMaps);
   setupAppAuthIPC({
     browserShellView,
     getAvatarMenuWindow: () => currentOpenPopupMaps.get(PopupName.AvatarMenu),
-    getCurrentBrowserContentView: getActiveBrowserContentView,
+    getAllBrowserContentView: () => Array.from(browserContentViewsMap.values()),
   });
 
   const updateBrowserContentViewBounds = (

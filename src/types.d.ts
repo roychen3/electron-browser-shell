@@ -4,7 +4,7 @@ declare global {
   interface Window {
     electronAPI: {
       onUrlUpdate: (callback: (url: string) => void) => () => void;
-      browserNavigateTo: (url: string) => Promise<void>;
+      browserNavigateTo: (url: string, tabId?: string) => Promise<void>;
       browserBack: () => Promise<void>;
       browserForward: () => Promise<void>;
       browserReload: () => Promise<void>;

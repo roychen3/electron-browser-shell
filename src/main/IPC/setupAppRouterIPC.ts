@@ -2,13 +2,25 @@ import { ipcMain } from 'electron';
 import { WebContentsView } from 'electron';
 
 export function setupAppRouterIPC(
-  getCurrentBrowserContentView: () => WebContentsView
+  getCurrentBrowserContentView: () => WebContentsView,
+  getBrowserContentViewById: (id: string) => WebContentsView | undefined
 ) {
   ipcMain.removeHandler('browser-navigate-to');
-  ipcMain.handle('browser-navigate-to', async (_, url: string) => {
-    const browserContentView = getCurrentBrowserContentView();
-    await browserContentView.webContents.loadURL(url);
-  });
+  ipcMain.handle(
+    'browser-navigate-to',
+    async (_, url: string, tabId?: string) => {
+      if (tabId) {
+        const browserContentView = getBrowserContentViewById(tabId);
+        if (!browserContentView) {
+          throw new Error('Browser content view not found');
+        }
+        await browserContentView.webContents.loadURL(url);
+      } else {
+        const browserContentView = getCurrentBrowserContentView();
+        await browserContentView.webContents.loadURL(url);
+      }
+    }
+  );
 
   ipcMain.removeHandler('browser-back');
   ipcMain.handle('browser-back', () => {

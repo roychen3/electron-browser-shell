@@ -11,7 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('update-url', listener);
     return () => ipcRenderer.removeListener('update-url', listener);
   },
-  browserNavigateTo: (url) => ipcRenderer.invoke('browser-navigate-to', url),
+  browserNavigateTo: (url, tabId) =>
+    ipcRenderer.invoke('browser-navigate-to', url, tabId),
   browserBack: () => ipcRenderer.invoke('browser-back'),
   browserForward: () => ipcRenderer.invoke('browser-forward'),
   browserReload: () => ipcRenderer.invoke('browser-reload'),

@@ -3,11 +3,11 @@ import { BrowserWindow, ipcMain, WebContentsView } from 'electron';
 export function setupAppAuthIPC({
   browserShellView,
   getAvatarMenuWindow,
-  getCurrentBrowserContentView,
+  getAllBrowserContentView: getCurrentBrowserContentView,
 }: {
   browserShellView: WebContentsView;
   getAvatarMenuWindow: () => BrowserWindow | undefined;
-  getCurrentBrowserContentView: () => WebContentsView;
+  getAllBrowserContentView: () => WebContentsView[];
 }) {
   ipcMain.removeHandler('get-token');
   ipcMain.handle('get-token', async () => {
@@ -24,7 +24,9 @@ export function setupAppAuthIPC({
   ipcMain.handle('set-token', async (_, token: string) => {
     console.log('-- ipcMain.handle(set-token) ----', token);
     browserShellView.webContents.send('token-update', token);
-    getCurrentBrowserContentView().webContents.send('token-update', token);
+    getCurrentBrowserContentView().forEach((browserContentView) => {
+      browserContentView.webContents.send('token-update', token);
+    });
     const avatarMenuWindow = getAvatarMenuWindow();
     if (avatarMenuWindow) {
       console.log('---- sending token to avatar menu ----', token);

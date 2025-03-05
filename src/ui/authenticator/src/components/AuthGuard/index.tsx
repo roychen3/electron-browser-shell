@@ -9,10 +9,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     if (token) {
+      const tabId = window.electronAPI.getOwnTabId();
       const url = import.meta.env.PROD
         ? 'app://protected-application'
         : 'http://localhost:3010';
-      window.electronAPI.browserNavigateTo(url);
+      window.electronAPI.browserNavigateTo(url, tabId || undefined);
     }
   }, [token]);
 
