@@ -5,8 +5,8 @@ import path from 'path';
 export const getAppUiPath = (restPath = '') =>
   path.join(__dirname, '../ui/', restPath);
 
-export const getBrowserShellPath = () =>
-  path.join(__dirname, '../ui/browser-shell/index.html');
+export const getBrowserOperationsPanelPath = () =>
+  path.join(__dirname, '../ui/browser-operations-panel/index.html');
 
 export const getBrowserAvatarMenuPath = () =>
   path.join(__dirname, '../ui/browser-avatar-menu/index.html');

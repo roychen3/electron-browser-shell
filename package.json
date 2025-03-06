@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "main": "dist/src/main/index.js",
   "workspaces": [
-    "src/ui/browser-shell",
+    "src/ui/browser-operations-panel",
     "src/ui/browser-avatar-menu",
     "src/ui/authenticator",
     "src/ui/protected-application"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:browser-shell": "npm run dev --workspace=src/ui/browser-shell",
-    "build:browser-shell": "npm run build --workspace=src/ui/browser-shell",
+    "dev:browser-operations-panel": "npm run dev --workspace=src/ui/browser-operations-panel",
+    "build:browser-operations-panel": "npm run build --workspace=src/ui/browser-operations-panel",
     "dev:browser-avatar-menu": "npm run dev --workspace=src/ui/browser-avatar-menu",
     "build:browser-avatar-menu": "npm run build --workspace=src/ui/browser-avatar-menu",
     "dev:authenticator": "npm run dev --workspace=src/ui/authenticator",
@@ -22,9 +22,9 @@
     "build:electron": "tsc",
     "dev:electron": "npm run build:electron && electron-forge start",
     "dev:electron:watch": "npm run watch:electron & nodemon --exec electron-forge start",
-    "dev:ui": "npm run dev:browser-shell & npm run dev:browser-avatar-menu & npm run dev:authenticator & npm run dev:protected-application",
-    "dev": "npm run dev:browser-shell & npm run dev:browser-avatar-menu & npm run dev:authenticator & npm run dev:protected-application & npm run dev:electron",
-    "build": "npm run build:browser-shell && npm run build:browser-avatar-menu && npm run build:authenticator && npm run build:protected-application && npm run build:electron",
+    "dev:ui": "npm run dev:browser-operations-panel & npm run dev:browser-avatar-menu & npm run dev:authenticator & npm run dev:protected-application",
+    "dev": "npm run dev:browser-operations-panel & npm run dev:browser-avatar-menu & npm run dev:authenticator & npm run dev:protected-application & npm run dev:electron",
+    "build": "npm run build:browser-operations-panel && npm run build:browser-avatar-menu && npm run build:authenticator && npm run build:protected-application && npm run build:electron",
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make"
   },

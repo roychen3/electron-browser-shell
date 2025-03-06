@@ -10,7 +10,7 @@ export default defineConfig({
   },
   base: './',
   build: {
-    outDir: '../../../dist/src/ui/browser-shell',
+    outDir: '../../../dist/src/ui/browser-operations-panel',
     emptyOutDir: true
   }
 })

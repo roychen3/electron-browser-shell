@@ -9,7 +9,7 @@ import { createApplicationMenu } from './menu';
 import {
   getAppUiPath,
   getBrowserOperatorPreloadPath,
-  getBrowserShellPath,
+  getBrowserOperationsPanelPath,
 } from './pathResolver';
 import { TabManager } from './TabService';
 import {
@@ -31,21 +31,21 @@ function createWindow(): void {
     height: 800,
   });
 
-  const browserShellView = new WebContentsView({
+  const browserOperationsPanelView = new WebContentsView({
     webPreferences: {
       preload: getBrowserOperatorPreloadPath(),
     },
   });
 
   if (app.isPackaged) {
-    browserShellView.webContents.loadFile(getBrowserShellPath());
+    browserOperationsPanelView.webContents.loadFile(getBrowserOperationsPanelPath());
   } else {
-    browserShellView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
+    browserOperationsPanelView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
   }
 
   const updateShellViewBounds = () => {
     const winBounds = mainWindow.getContentBounds();
-    browserShellView.setBounds({
+    browserOperationsPanelView.setBounds({
       x: 0,
       y: 0,
       width: winBounds.width,
@@ -75,7 +75,7 @@ function createWindow(): void {
   );
   setupAppPopupIPC(mainWindow, currentOpenPopupMaps);
   setupAppAuthIPC({
-    browserShellView,
+    browserOperationsPanelView,
     getAvatarMenuWindow: () => currentOpenPopupMaps.get(PopupName.AvatarMenu),
     getAllBrowserContentView: () => Array.from(browserContentViewsMap.values()),
   });
@@ -142,7 +142,7 @@ function createWindow(): void {
       throw new Error('browser content view not found');
     }
     browserContentView.webContents.send('update-tab-by-id', args);
-    browserShellView.webContents.send('update-tab-by-id', args);
+    browserOperationsPanelView.webContents.send('update-tab-by-id', args);
   });
 
   tabManager.onDeleteTabById((id) => {
@@ -193,9 +193,9 @@ function createWindow(): void {
     updateBrowserContentViewBounds(getActiveBrowserContentView());
   });
 
-  mainWindow.contentView.addChildView(browserShellView);
+  mainWindow.contentView.addChildView(browserOperationsPanelView);
 
-  createApplicationMenu(browserShellView, getActiveBrowserContentView);
+  createApplicationMenu(browserOperationsPanelView, getActiveBrowserContentView);
 }
 
 app.whenReady().then(() => {

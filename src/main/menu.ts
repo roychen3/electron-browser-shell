@@ -1,7 +1,7 @@
 import { WebContentsView, Menu, app } from 'electron';
 
 export function createApplicationMenu(
-  browserShellView: WebContentsView,
+  browserOperationsPanelView: WebContentsView,
   getCurrentBrowserContentView: () => WebContentsView
 ) {
   const menu = Menu.getApplicationMenu();
@@ -32,7 +32,7 @@ export function createApplicationMenu(
         label: 'Local Developer',
         submenu: [
           {
-            click: () => browserShellView.webContents.toggleDevTools(),
+            click: () => browserOperationsPanelView.webContents.toggleDevTools(),
             label: 'Toggle Browser Shell DevTools',
           },
         ],
