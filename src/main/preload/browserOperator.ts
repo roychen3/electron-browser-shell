@@ -1,4 +1,7 @@
+// preload 是跑在 browser，不能 import 其他模組，只能 import `electron` & type
 import { contextBridge, ipcRenderer } from 'electron';
+
+import type { Tab } from '../TabService';
 
 function getProcessArgvValue(key: string) {
   const arg = process.argv.find((arg) => arg.startsWith(`--${key}=`));
@@ -6,11 +9,6 @@ function getProcessArgvValue(key: string) {
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  onUrlUpdate: (callback) => {
-    const listener = (_event: any, url: string) => callback(url);
-    ipcRenderer.on('update-url', listener);
-    return () => ipcRenderer.removeListener('update-url', listener);
-  },
   browserNavigateTo: (url, tabId) =>
     ipcRenderer.invoke('browser-navigate-to', url, tabId),
   browserBack: () => ipcRenderer.invoke('browser-back'),
@@ -21,6 +19,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTabById: (id) => ipcRenderer.invoke('get-tab-by-id', id),
   createTab: (value) => ipcRenderer.invoke('create-tab', value),
   updateTabById: (value) => ipcRenderer.invoke('update-tab-by-id', value),
+  onUpdateTabById: (callback) => {
+    const listener = (
+      _event: any,
+      arg: {
+        newValue: Tab;
+        oldValue: Tab;
+      }
+    ) => callback(arg);
+    ipcRenderer.on('update-tab-by-id', listener);
+    return () => ipcRenderer.removeListener('update-tab-by-id', listener);
+  },
   deleteTabById: (id) => ipcRenderer.invoke('delete-tab-by-id', id),
   getActiveTabId: () => ipcRenderer.invoke('get-active-tab-id'),
   setActiveTabId: (id) => ipcRenderer.invoke('set-active-tab-id', id),

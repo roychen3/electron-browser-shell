@@ -104,26 +104,25 @@ function createWindow(): void {
     });
 
     const onUpdateUrl = (url: string) => {
-      const currentTab = tabManager.getTabById(tab.id);
-      if (!currentTab) {
-        throw new Error('Tab not found');
-      }
-
-      const prevUrl = currentTab.url;
-      if (prevUrl !== url) {
-        tabManager.updateTabById(tab.id, { url });
-      }
+      tabManager.updateTabById(tab.id, { url });
     };
     // Subscribe to browser content view's navigation events
     newBrowserContentView.webContents.on('did-navigate', (_event, url) => {
       console.log('-- did-navigate ----');
-      onUpdateUrl?.(url);
+      onUpdateUrl(url);
     });
     newBrowserContentView.webContents.on(
       'did-navigate-in-page',
       (_event, url) => {
         console.log('-- did-navigate-in-page ----');
-        onUpdateUrl?.(url);
+        onUpdateUrl(url);
+      }
+    );
+    newBrowserContentView.webContents.on(
+      'page-title-updated',
+      (_event, title) => {
+        console.log('-- page-title-updated ----');
+        tabManager.updateTabById(tab.id, { title });
       }
     );
 
@@ -134,17 +133,16 @@ function createWindow(): void {
     browserContentViewsMap.set(tab.id, newBrowserContentView);
   });
 
-  tabManager.onUpdateTabById(({ newValue, oldValue }) => {
+  tabManager.onUpdateTabById((args) => {
     console.log('-- tabManager.onUpdateTabById ----');
-    console.log('---- newValue.url:', newValue.url);
-    console.log('---- oldValue.url:', oldValue?.url);
-    const browserContentView = browserContentViewsMap.get(newValue.id);
-    const urlEqual = oldValue?.url === newValue.url;
-    if (!urlEqual && browserContentView) {
-      console.log('------ send `update-url`');
-      browserContentView.webContents.send('update-url', newValue.url);
-      browserShellView.webContents.send('update-url', newValue.url);
+    console.log('---- newValue.url:', args.newValue.url);
+    console.log('---- oldValue.url:', args.oldValue?.url);
+    const browserContentView = browserContentViewsMap.get(args.newValue.id);
+    if (!browserContentView) {
+      throw new Error('browser content view not found');
     }
+    browserContentView.webContents.send('update-tab-by-id', args);
+    browserShellView.webContents.send('update-tab-by-id', args);
   });
 
   tabManager.onDeleteTabById((id) => {

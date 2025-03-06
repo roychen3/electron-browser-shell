@@ -68,8 +68,6 @@ function App() {
       };
       const urlToNavigate = formattedUrl(submitUrl);
       await window.electronAPI.browserNavigateTo(urlToNavigate);
-      const tabs = await window.electronAPI.getTabs();
-      setTabs(tabs);
     } catch (error) {
       console.error('Navigation error:', error);
     }
@@ -88,12 +86,20 @@ function App() {
     };
     setInitActiveId();
 
-    const destroyOnUrlUpdate = window.electronAPI.onUrlUpdate((url) => {
-      setUrl(url);
-    });
+    const destroyOnUpdateTabById = window.electronAPI.onUpdateTabById(
+      ({ newValue }) => {
+        console.log('-- onUpdateTabById ----')
+        setTabs((prevTabs) => {
+          return prevTabs.map((tab) =>
+            tab.id === newValue.id ? newValue : tab
+          );
+        });
+        setUrl(newValue.url);
+      }
+    );
 
     return () => {
-      destroyOnUrlUpdate();
+      destroyOnUpdateTabById();
     };
   }, []);
 

@@ -37,18 +37,15 @@ export default function ElectronRouter({
       }
     };
 
-    const unSubscribeUrl = window.electronAPI.onUrlUpdate((url) => {
-      console.log('-- onUrlUpdate ----');
-      navigate(url);
-    });
-
-    const setInitUrl = async () => {
-      console.log('-- setInitUrl ----');
-      const tabId = window.electronAPI.getOwnTabId();
-      const tab = await window.electronAPI.getTabById(tabId || '');
-      navigate(tab?.url || '');
-    };
-    setInitUrl();
+    const unSubscribeUrl = window.electronAPI.onUpdateTabById(
+      ({ newValue, oldValue }) => {
+        console.log('-- onUrlUpdate ----');
+        if (newValue.url !== oldValue.url) {
+          console.log('---- navigate ----');
+          navigate(newValue.url);
+        }
+      }
+    );
 
     return () => {
       unSubscribeRouter();

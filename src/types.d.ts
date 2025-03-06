@@ -4,7 +4,6 @@ import { type Rectangle, type Placement } from './main/popup';
 declare global {
   interface Window {
     electronAPI: {
-      onUrlUpdate: (callback: (url: string) => void) => () => void;
       browserNavigateTo: (url: string, tabId?: string) => Promise<void>;
       browserBack: () => Promise<void>;
       browserForward: () => Promise<void>;
@@ -19,6 +18,9 @@ declare global {
         id: string;
         value: Partial<Tab>;
       }) => Promise<ReturnType<TabService['updateTabById']>>;
+      onUpdateTabById: (
+        callback: (args: { newValue: Tab; oldValue: Tab }) => void
+      ) => () => void;
       deleteTabById: (
         id: string
       ) => Promise<ReturnType<TabService['deleteTabById']>>;

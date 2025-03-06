@@ -1,4 +1,4 @@
-import { WebContentsView, Menu } from 'electron';
+import { WebContentsView, Menu, app } from 'electron';
 
 export function createApplicationMenu(
   browserShellView: WebContentsView,
@@ -25,7 +25,7 @@ export function createApplicationMenu(
   const localDeveloperMenu = menu.items.find(
     (item) => item.label === 'Local Developer'
   );
-  if (!localDeveloperMenu) {
+  if (!app.isPackaged &&!localDeveloperMenu) {
     template = Menu.buildFromTemplate([
       ...menu.items,
       {
