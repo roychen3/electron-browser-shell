@@ -1,5 +1,5 @@
 {
-  "name": "specialized-browser",
+  "name": "electron-browser-shell",
   "version": "1.0.0",
   "main": "dist/src/main/index.js",
   "workspaces": [
