@@ -1,4 +1,5 @@
 import { type Tab, type TabService } from './main/TabService';
+import { type Rectangle, type Placement } from './main/popup';
 
 declare global {
   interface Window {
@@ -28,25 +29,10 @@ declare global {
       getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
       getOwnTabId: () => string | null;
 
-      openAvatarMenuPopup: (
-        options?: Partial<{
-          size: { width: number; height: number };
-          position: { x: number; y: number };
-          placement:
-            | 'left'
-            | 'leftTop'
-            | 'leftBottom'
-            | 'right'
-            | 'rightTop'
-            | 'rightBottom'
-            | 'top'
-            | 'topLeft'
-            | 'topRight'
-            | 'bottom'
-            | 'bottomLeft'
-            | 'bottomRight';
-        }>
-      ) => Promise<void>;
+      openAvatarMenuPopup: (options: {
+        anchorRect: Rectangle;
+        placement?: Placement;
+      }) => Promise<void>;
       closeAvatarMenuPopup: () => Promise<void>;
 
       getToken: () => Promise<string>;

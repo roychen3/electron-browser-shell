@@ -5,36 +5,12 @@ export default function Avatar() {
     const rect = event.currentTarget.getBoundingClientRect();
 
     window.electronAPI.openAvatarMenuPopup({
-      // left
-      // position: { x: rect.left, y: rect.top + rect.height },
-      // placement: 'leftTop',
-      // position: { x: rect.left, y: rect.top + rect.height + rect.height / 2 },
-      // placement: 'left',
-      // position: { x: rect.left, y: rect.top + rect.height + rect.height },
-      // placement: 'leftBottom',
-
-      // top
-      // position: { x: rect.left, y: rect.top + rect.height },
-      // placement: 'topLeft',
-      // position: { x: rect.left + rect.width / 2, y: rect.top + rect.height },
-      // placement: 'top',
-      // position: { x: rect.left + rect.width, y: rect.top + rect.height },
-      // placement: 'topRight',
-
-      // right
-      // position: { x: rect.right, y: rect.top + rect.height },
-      // placement: 'rightTop',
-      // position: { x: rect.right, y: rect.top + rect.height + rect.height / 2 },
-      // placement: 'right',
-      // position: { x: rect.right, y: rect.top + rect.height + rect.height },
-      // placement: 'rightBottom',
-
-      // bottom
-      // position: { x: rect.left, y: rect.bottom + rect.height },
-      // placement: 'bottomLeft',
-      // position: { x: rect.left + rect.width / 2, y: rect.bottom + rect.height },
-      // placement: 'bottom',
-      position: { x: rect.left + rect.width, y: rect.bottom + rect.height },
+      anchorRect: {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
+      },
       placement: 'bottomRight',
     });
   };
