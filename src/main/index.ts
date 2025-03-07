@@ -31,7 +31,8 @@ function createWindow(): void {
     height: 800,
     frame: false,
     titleBarStyle: 'hidden',
-    ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {})
+    ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
+    trafficLightPosition: { x: 14, y: 8 }
   });
 
   const browserOperationsPanelView = new WebContentsView({
