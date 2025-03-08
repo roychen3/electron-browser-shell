@@ -25,15 +25,18 @@ export function createApplicationMenu(
   const localDeveloperMenu = menu.items.find(
     (item) => item.label === 'Local Developer'
   );
-  if (!app.isPackaged &&!localDeveloperMenu) {
+  if (!localDeveloperMenu) {
     template = Menu.buildFromTemplate([
       ...menu.items,
       {
+        visible: !app.isPackaged,
         label: 'Local Developer',
         submenu: [
           {
-            click: () => browserOperationsPanelView.webContents.toggleDevTools(),
+            click: () =>
+              browserOperationsPanelView.webContents.toggleDevTools(),
             label: 'Toggle Browser Shell DevTools',
+            accelerator: 'CmdOrCtrl+Shift+p',
           },
         ],
       },

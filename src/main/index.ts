@@ -29,6 +29,18 @@ function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    frame: false,
+    titleBarStyle: 'hidden',
+    ...(process.platform !== 'darwin'
+      ? {
+          titleBarOverlay: {
+            color: '#262626',
+            symbolColor: '#fff',
+            height: 32,
+          },
+        }
+      : {}),
+    trafficLightPosition: { x: 14, y: 8 },
   });
 
   const browserOperationsPanelView = new WebContentsView({
@@ -38,7 +50,9 @@ function createWindow(): void {
   });
 
   if (app.isPackaged) {
-    browserOperationsPanelView.webContents.loadFile(getBrowserOperationsPanelPath());
+    browserOperationsPanelView.webContents.loadFile(
+      getBrowserOperationsPanelPath()
+    );
   } else {
     browserOperationsPanelView.webContents.loadURL(BROWSER_SHELL_DEV_URL);
   }
@@ -195,7 +209,10 @@ function createWindow(): void {
 
   mainWindow.contentView.addChildView(browserOperationsPanelView);
 
-  createApplicationMenu(browserOperationsPanelView, getActiveBrowserContentView);
+  createApplicationMenu(
+    browserOperationsPanelView,
+    getActiveBrowserContentView
+  );
 }
 
 app.whenReady().then(() => {

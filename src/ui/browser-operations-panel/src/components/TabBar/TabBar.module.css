@@ -1,0 +1,7 @@
+.electron-draggable {
+  app-region: drag;
+}
+
+.electron-not-draggable {
+  app-region: no-drag;
+}
