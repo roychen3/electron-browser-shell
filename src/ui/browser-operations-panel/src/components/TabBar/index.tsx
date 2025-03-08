@@ -24,7 +24,7 @@ export default function TabBar({
   addNewTab,
 }: TabBarProps) {
   const isMacOS = window.electronAPI.isMacOS();
-  const barPadding = isMacOS ? 'pl-20 pr-10' : 'pr-30';
+  const barPadding = isMacOS ? 'pl-20 pr-10' : 'pl-10 pr-50';
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
 
   return (
