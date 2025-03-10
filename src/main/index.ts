@@ -139,6 +139,13 @@ function createWindow(): void {
         tabManager.updateTabById(tab.id, { title });
       }
     );
+    newBrowserContentView.webContents.on(
+      'page-favicon-updated',
+      (_event, favicon) => {
+        console.log('-- page-favicon-updated ----');
+        tabManager.updateTabById(tab.id, { favicon: favicon[0] });
+      }
+    );
 
     newBrowserContentView.webContents.loadURL(tab.url);
     newBrowserContentView.setVisible(false);

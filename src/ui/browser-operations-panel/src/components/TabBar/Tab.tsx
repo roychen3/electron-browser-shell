@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState, forwardRef } from 'react';
 import { IoClose } from 'react-icons/io5';
 
-export interface Tab {
-  id: string;
-  url: string;
-  title: string;
-}
+import type { Tab } from './types';
 
 export interface TabProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> {
@@ -16,8 +12,9 @@ export interface TabProps
   ref?: React.Ref<HTMLDivElement>;
 }
 
-const Tab = forwardRef<HTMLDivElement, TabProps>(
+const TabComponent = forwardRef<HTMLDivElement, TabProps>(
   ({ tab, isActive, onClick, onClose, className, ...props }, ref) => {
+    console.log('-- render TabComponent ----');
     const colorClasses = isActive
       ? 'bg-neutral-700 text-white after:hidden'
       : 'text-gray-400 hover:bg-neutral-900';
@@ -66,9 +63,15 @@ const Tab = forwardRef<HTMLDivElement, TabProps>(
         {...props}
       >
         <div className={`flex items-center overflow-hidden`}>
-          <span className={`flex-1 text-sm text-nowrap overflow-hidden`}>
-            {tab.title || 'New Tab'}
-          </span>
+          <div className={`flex-1 flex items-center gap-2 overflow-hidden`}>
+            <div className="shrink-0">
+              <img className="size-[18px]" src={tab.favicon} />
+            </div>
+            <span className={`text-sm text-nowrap`}>
+              {tab.title || 'New Tab'}
+            </span>
+          </div>
+
           {(isActive || showCloseWithSize) && (
             <button
               onClick={(event) => {
@@ -86,4 +89,4 @@ const Tab = forwardRef<HTMLDivElement, TabProps>(
   }
 );
 
-export default Tab;
+export default TabComponent;

@@ -3,11 +3,7 @@ import { IoAdd } from 'react-icons/io5';
 import TabComponent from './Tab';
 import styles from './TabBar.module.css';
 
-export interface Tab {
-  id: string;
-  url: string;
-  title: string;
-}
+import type { Tab } from './types'
 
 export interface TabBarProps extends React.RefAttributes<HTMLDivElement> {
   tabs: Tab[];
