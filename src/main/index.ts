@@ -1,4 +1,11 @@
-import { app, BrowserWindow, WebContentsView, protocol, net } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  WebContentsView,
+  protocol,
+  net,
+  session,
+} from 'electron';
 
 import {
   AUTHENTICATOR_DEV_URL,
@@ -246,6 +253,24 @@ app.whenReady().then(() => {
       return new Response('File not found', { status: 404 });
     }
   });
+
+  session.defaultSession.webRequest.onErrorOccurred(
+    ({ url, webContents, error }) => {
+      console.error('-- session.defaultSession.webRequest.onErrorOccurred ----');
+      console.error('---- error:', error);
+      if (error === 'net::ERR_NAME_NOT_RESOLVED' && webContents) {
+        const uUrl = new URL(url);
+        const query =
+          (uUrl.host +
+          (uUrl.pathname === '/' ? '' : uUrl.pathname) +
+          uUrl.search);
+
+        const googleSearchUrl = new URL('https://www.google.com/search');
+        googleSearchUrl.searchParams.set('q', query);
+        webContents.loadURL(googleSearchUrl.toString());
+      }
+    }
+  );
 
   createWindow();
 
