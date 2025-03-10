@@ -1,5 +1,6 @@
-import { IoAdd, IoClose } from 'react-icons/io5';
+import { IoAdd } from 'react-icons/io5';
 
+import TabComponent from './Tab';
 import styles from './TabBar.module.css';
 
 export interface Tab {
@@ -29,16 +30,13 @@ export default function TabBar({
 
   return (
     <div
-      className={`flex items-center px-1 pt-1 bg-neutral-800 max-w-full ${barPadding} ${styles['electron-draggable']}`}
+      className={`flex items-center px-1 pt-1.5 bg-neutral-800 max-w-full ${barPadding} ${styles['electron-draggable']}`}
     >
-      <div className={`pr-[6px] flex flex-nowrap gap-[6px] min-w-0 overflow-x-hidden ${styles['electron-not-draggable']}`}>
+      <div
+        className={`pr-[6px] flex flex-nowrap gap-[6px] min-w-0 overflow-x-hidden ${styles['electron-not-draggable']}`}
+      >
         {tabs.map((tab, tabIndex) => {
           const isActive = activeTabId === tab.id;
-          const colorClasses = isActive
-            ? 'bg-neutral-700 text-white after:hidden'
-            : 'text-gray-400 hover:bg-neutral-900';
-
-          const titleOverflowClasses = isActive ? 'overflow-hidden' : '';
 
           const isActivePrev = activeIndex - tabIndex === 1;
           const dividerClasses = isActivePrev
@@ -46,37 +44,23 @@ export default function TabBar({
             : 'after:absolute after:right-[-4px] after:top-[50%] after:transform-[translateY(-50%)] after:w-[2px] after:h-[60%] after:bg-neutral-700';
 
           return (
-            <div
+            <TabComponent
               key={tab.id}
-              onClick={() => switchTab?.(tab.id)}
-              className={`group relative min-w-[34px] max-w-[200px] w-[200px] px-2 py-1 rounded-t-lg select-none ${colorClasses} ${dividerClasses}`}
-            >
-              <div className={`flex items-center overflow-hidden`}>
-                <span
-                  className={`flex-1 text-sm text-nowrap ${titleOverflowClasses}`}
-                >
-                  {tab.title || 'New Tab'}
-                </span>
-                <button
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    closeTab?.(tab.id);
-                  }}
-                  className={`p-0.5 rounded-full hover:bg-neutral-600`}
-                >
-                  <IoClose size={14} />
-                </button>
-              </div>
-            </div>
+              className={dividerClasses}
+              tab={tab}
+              isActive={isActive}
+              onClick={(id) => switchTab?.(id)}
+              onClose={(id) => closeTab?.(id)}
+            />
           );
         })}
       </div>
 
       <button
         onClick={addNewTab}
-        className={`p-1 text-white rounded-full hover:bg-neutral-600 relative ${styles['electron-not-draggable']} `}
+        className={`p-1.5 text-white rounded-full hover:bg-neutral-600 relative ${styles['electron-not-draggable']} `}
       >
-        <IoAdd size={14} />
+        <IoAdd size={16} />
       </button>
     </div>
   );
