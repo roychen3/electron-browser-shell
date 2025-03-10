@@ -9,6 +9,7 @@ function getProcessArgvValue(key: string) {
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  isMacOS: () => process.platform === 'darwin',
   browserNavigateTo: (url, tabId) =>
     ipcRenderer.invoke('browser-navigate-to', url, tabId),
   browserBack: () => ipcRenderer.invoke('browser-back'),

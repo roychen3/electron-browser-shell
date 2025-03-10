@@ -4,6 +4,8 @@ import { type Rectangle, type Placement } from './main/popup';
 declare global {
   interface Window {
     electronAPI: {
+      isMacOS: () => boolean;
+
       browserNavigateTo: (url: string, tabId?: string) => Promise<void>;
       browserBack: () => Promise<void>;
       browserForward: () => Promise<void>;
