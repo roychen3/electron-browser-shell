@@ -27,26 +27,26 @@ export default function NavigationBar({
   };
 
   return (
-    <div {...props} className={`p-2 ${props.className}`}>
+    <div {...props} className={`px-2 py-1.5 ${props.className}`}>
       <div className="flex items-center gap-1">
         {/* Navigation buttons */}
         <button
-          className="p-1 rounded-full hover:bg-neutral-600 text-white"
+          className="p-2 rounded-full hover:bg-neutral-600 text-white"
           onClick={() => window.electronAPI.browserBack()}
         >
-          <IoArrowBack size={20} />
+          <IoArrowBack size={16} />
         </button>
         <button
-          className="p-1 rounded-full hover:bg-neutral-600 text-white"
+          className="p-2 rounded-full hover:bg-neutral-600 text-white"
           onClick={() => window.electronAPI.browserForward()}
         >
-          <IoArrowForward size={20} />
+          <IoArrowForward size={16} />
         </button>
         <button
-          className="p-1 rounded-full hover:bg-neutral-600 text-white"
+          className="p-2 rounded-full hover:bg-neutral-600 text-white"
           onClick={() => window.electronAPI.browserReload()}
         >
-          <IoReload size={20} />
+          <IoReload size={16} />
         </button>
 
         {/* URL input bar */}
