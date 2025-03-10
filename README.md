@@ -104,6 +104,8 @@ electron 是使用 `loadFile` 來載入 UI 專案打把包好的 `index.html`。
 ## TODO:
 
 - Tab 使用 drag drop 調整順序。
+- 開新分頁。
+- 開新視窗。
+- Tab 使用 drag 開新視窗。
 - [Validate the sender of all IPC messages](https://www.electronjs.org/docs/latest/tutorial/security#17-validate-the-sender-of-all-ipc-messages)。
 - 處理更多瀏覽器快捷鍵。
-- package script 在 windows 系統指令使用 `&` 與 UNIX 不同，會無法使用。
