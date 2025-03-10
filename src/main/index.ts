@@ -36,11 +36,11 @@ function createWindow(): void {
           titleBarOverlay: {
             color: '#262626',
             symbolColor: '#fff',
-            height: 32,
+            height: 38,
           },
         }
       : {}),
-    trafficLightPosition: { x: 14, y: 8 },
+    trafficLightPosition: { x: 14, y: 12 },
   });
 
   const browserOperationsPanelView = new WebContentsView({
