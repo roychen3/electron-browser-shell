@@ -20,7 +20,7 @@ export default function Avatar() {
       onClick={toggleMenu}
       className="p-1 rounded-full hover:bg-neutral-600 text-white"
     >
-      <RxAvatar className="w-6 h-6" />
+      <RxAvatar size={20} />
     </button>
   );
 }

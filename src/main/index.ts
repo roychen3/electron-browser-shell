@@ -36,11 +36,11 @@ function createWindow(): void {
           titleBarOverlay: {
             color: '#262626',
             symbolColor: '#fff',
-            height: 32,
+            height: 38,
           },
         }
       : {}),
-    trafficLightPosition: { x: 14, y: 8 },
+    trafficLightPosition: { x: 14, y: 12 },
   });
 
   const browserOperationsPanelView = new WebContentsView({
@@ -137,6 +137,13 @@ function createWindow(): void {
       (_event, title) => {
         console.log('-- page-title-updated ----');
         tabManager.updateTabById(tab.id, { title });
+      }
+    );
+    newBrowserContentView.webContents.on(
+      'page-favicon-updated',
+      (_event, favicon) => {
+        console.log('-- page-favicon-updated ----');
+        tabManager.updateTabById(tab.id, { favicon: favicon[0] });
       }
     );
 

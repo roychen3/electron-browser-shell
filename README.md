@@ -1,6 +1,6 @@
 # Electron Browser Shell
 
-此專案為客製化瀏覽器，預設使用自家公司的帳號做身份驗證，掛載自家多項產品時可以直接使用 app 登入後的 token 做免登入。因為是客製化瀏覽器，也可以自己寫邏輯來阻擋特定網址，提高安全性。
+此專案為客製化瀏覽器，預設使用自家公司的帳號做身份驗證，掛載自家多項產品時可以直接使用 app 的 authenticator 功能登入，來達到整個瀏覽器記住使用者的身份。因為是客製化瀏覽器，也可以自己寫邏輯來阻擋特定網址，提高安全性。
 
 ## Quick Start(不推薦開發使用)
 
@@ -51,7 +51,7 @@ $ npm run make
 
 - `authenticator`：
 
-  使用 `react` 建置，統一由此作登入註冊產品帳號。
+  使用 `react` 建置，統一由此作登入/註冊產品帳號。
 
   ![authenticator](docs/images/authenticator-sign-in.png)
 
@@ -104,8 +104,8 @@ electron 是使用 `loadFile` 來載入 UI 專案打把包好的 `index.html`。
 ## TODO:
 
 - Tab 使用 drag drop 調整順序。
-- 瀏覽器視窗上方調整成跟 chrome 一樣。
-- 處理應用程式的 Menu（在 windows 系統，視窗下方會有應用程式的選單）。
+- 開新分頁。
+- 開新視窗。
+- Tab 使用 drag 開新視窗。
 - [Validate the sender of all IPC messages](https://www.electronjs.org/docs/latest/tutorial/security#17-validate-the-sender-of-all-ipc-messages)。
 - 處理更多瀏覽器快捷鍵。
-- package script 在 windows 系統指令使用 `&` 與 UNIX 不同。

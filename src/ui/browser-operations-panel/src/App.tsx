@@ -88,7 +88,7 @@ function App() {
 
     const destroyOnUpdateTabById = window.electronAPI.onUpdateTabById(
       ({ newValue }) => {
-        console.log('-- onUpdateTabById ----')
+        console.log('-- onUpdateTabById ----');
         setTabs((prevTabs) => {
           return prevTabs.map((tab) =>
             tab.id === newValue.id ? newValue : tab
