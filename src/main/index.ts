@@ -183,7 +183,7 @@ function createWindow(
       browserContentView.webContents.close();
       browserContentViewsMap.delete(id);
       if (browserContentViewsMap.size === 0) {
-        app.quit();
+        mainWindow.close();
       }
     }
   });
