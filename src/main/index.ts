@@ -13,7 +13,7 @@ import {
   BROWSER_SHELL_DEV_URL,
   BROWSER_SHELL_HEIGHT,
 } from './constants';
-import { isMac } from './is';
+import { isMac, isFilenameWithExtension } from './is';
 import { createApplicationMenu } from './menu';
 import {
   getAppUiPath,
@@ -28,6 +28,7 @@ import {
   setupAppAuthIPC,
 } from './IPC';
 import { PopupName } from './IPC/setupAppPopupIPC';
+
 
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
@@ -214,7 +215,7 @@ function createWindow(
   // create default tab first
   const DEFAULT_TAB_ID = 'default-open-tab-id';
   const DEFAULT_URL = app.isPackaged
-    ? 'app://authenticator/?pathname=/sign-in'
+    ? 'app://authenticator/sign-in'
     : `${AUTHENTICATOR_DEV_URL}/sign-in`;
   tabManager.createTab({ id: DEFAULT_TAB_ID, url: DEFAULT_URL });
   tabManager.setActiveTabId(DEFAULT_TAB_ID);
@@ -238,21 +239,14 @@ app.whenReady().then(() => {
   protocol.handle('app', async (req) => {
     console.log('-- handle protocol: app ----');
     console.log('---- req.url:', req.url);
+    const uUrl = new URL(req.url);
+    const appName = uUrl.host;
     try {
-      const uUrl = new URL(req.url);
-      const appName = uUrl.host;
-      const pathname = uUrl.pathname === '/' ? 'index.html' : uUrl.pathname;
-      const pathnameParam = uUrl.searchParams.get('pathname') || '/';
-      const appPath = getAppUiPath(
-        `${appName}/${pathname}${
-          pathname === 'index.html' ? `?pathname=${pathnameParam}` : ''
-        }`
-      );
-      // [TODO]for windows
-      // return net.fetch(appPath);
-
-      // for mac
-      return net.fetch(`file://${appPath}`);
+      const pathnameSlices = uUrl.pathname.split('/');
+      const lastPathnameSlice = pathnameSlices[pathnameSlices.length - 1];
+      const pathname = isFilenameWithExtension(lastPathnameSlice) ? uUrl.pathname : 'index.html'
+      const appPath = getAppUiPath(`${appName}/${pathname}`);
+      return await net.fetch(`file://${appPath}`);
     } catch (error) {
       console.error(`Failed to load URL: ${req.url}`, error);
       return new Response('File not found', { status: 404 });
