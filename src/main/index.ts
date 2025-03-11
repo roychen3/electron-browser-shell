@@ -1,4 +1,12 @@
-import { app, BrowserWindow, WebContentsView, protocol, net } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  WebContentsView,
+  protocol,
+  net,
+  session,
+} from 'electron';
+import punycode from 'node:punycode';
 
 import {
   AUTHENTICATOR_DEV_URL,
@@ -25,7 +33,9 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true } },
 ]);
 
-function createWindow(): void {
+function createWindow(
+  browserContentViewsMap: Map<string, WebContentsView>
+): void {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -69,7 +79,6 @@ function createWindow(): void {
   // Init shell view bounds
   updateShellViewBounds();
 
-  const browserContentViewsMap = new Map<string, WebContentsView>();
   const tabManager = new TabManager();
 
   const getActiveBrowserContentView = () => {
@@ -223,6 +232,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  const browserContentViewsMap = new Map<string, WebContentsView>();
+
   protocol.handle('app', async (req) => {
     console.log('-- handle protocol: app ----');
     console.log('---- req.url:', req.url);
@@ -247,11 +258,42 @@ app.whenReady().then(() => {
     }
   });
 
-  createWindow();
+  session.defaultSession.webRequest.onErrorOccurred(
+    ({ url, webContents, error }) => {
+      console.error(
+        '-- session.defaultSession.webRequest.onErrorOccurred ----'
+      );
+
+      const webContentIndex = Array.from(
+        browserContentViewsMap.values()
+      ).findIndex((c) => c.webContents === webContents);
+      if (
+        error === 'net::ERR_NAME_NOT_RESOLVED' &&
+        webContents &&
+        webContentIndex !== -1
+      ) {
+        try {
+          const uUrl = new URL(url);
+          const query =
+            punycode.toUnicode(uUrl.host) +
+            (uUrl.pathname === '/' ? '' : uUrl.pathname) +
+            uUrl.search;
+
+          const googleSearchUrl = new URL('https://www.google.com/search');
+          googleSearchUrl.searchParams.set('q', query);
+          webContents.loadURL(googleSearchUrl.toString());
+        } catch (error) {
+          console.error('Failed to redirect to Google Search.');
+        }
+      }
+    }
+  );
+
+  createWindow(browserContentViewsMap);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      createWindow(browserContentViewsMap);
     }
   });
 });
