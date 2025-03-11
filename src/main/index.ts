@@ -13,6 +13,7 @@ import {
   BROWSER_SHELL_DEV_URL,
   BROWSER_SHELL_HEIGHT,
 } from './constants';
+import { isMac } from './is';
 import { createApplicationMenu } from './menu';
 import {
   getAppUiPath,
@@ -41,15 +42,15 @@ function createWindow(
     height: 800,
     frame: false,
     titleBarStyle: 'hidden',
-    ...(process.platform !== 'darwin'
-      ? {
+    ...(isMac()
+      ? {}
+      : {
           titleBarOverlay: {
             color: '#262626',
             symbolColor: '#fff',
             height: 38,
           },
-        }
-      : {}),
+        }),
     trafficLightPosition: { x: 14, y: 12 },
   });
 
@@ -299,7 +300,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (!isMac()) {
     app.quit();
   }
 });
