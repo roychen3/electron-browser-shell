@@ -16,7 +16,7 @@ function App() {
   const addNewTab = async () => {
     const data = await window.electronAPI.createTab({
       url: import.meta.env.PROD
-        ? 'app://authenticator/?pathname=/sign-in'
+        ? 'app://authenticator/sign-in'
         : 'http://localhost:3000/sign-in',
     });
     const [newTab, tabs] = data;

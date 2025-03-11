@@ -63,21 +63,15 @@ $ npm run make
 
 <br/>
 
-#### 限制使用 Memory Router
-
-因為網頁內容是跑在 WebContentsView 裡，他不是實際的瀏覽器，並且為了與 `browser-operations-panel` 做 URL 的同步處理，如果使用 BrowserRouter 會產生額外的操作紀錄，增加處理 URL 同步的問題。
-
-<br/>
-
 #### 產品模式下的 URL 為 `app://[ui-app-name]`
 
 electron 是使用 `loadFile` 來載入 UI 專案打把包好的 `index.html`。為了避免暴露檔案的路徑，使用自定義 protocol 處理 `app://` 的來處理 app 自身的頁面。
 
-例如 `app://authenticator/?pathname=/sign-in`：
+例如 `app://authenticator/sign-in`：
 
 `app://authenticator`: 表示 ui 的 `authenticator` 專案。
 
-`pathname=/sign-in`: 表示 ui 的 `authenticator` 專案的 router pathname。
+`/sign-in`: 表示 ui 的 `authenticator` 專案的 router pathname。
 
 <br/>
 
