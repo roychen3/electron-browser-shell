@@ -1,9 +1,10 @@
 import { IoAdd } from 'react-icons/io5';
 
+import { useDragDrop } from './useDragDrop';
 import TabComponent from './Tab';
 import styles from './TabBar.module.css';
 
-import type { Tab } from './types'
+import type { Tab } from './types';
 
 export interface TabBarProps extends React.RefAttributes<HTMLDivElement> {
   tabs: Tab[];
@@ -23,6 +24,8 @@ export default function TabBar({
   const isMacOS = window.electronAPI.isMacOS();
   const barPadding = isMacOS ? 'pl-20 pr-10' : 'pl-10 pr-50';
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+
+  const { drag } = useDragDrop({ data: tabs });
 
   return (
     <div
@@ -45,8 +48,15 @@ export default function TabBar({
               className={dividerClasses}
               tab={tab}
               isActive={isActive}
-              onClick={(id) => switchTab?.(id)}
               onClose={(id) => closeTab?.(id)}
+              data-drag-drop-index={tabIndex}
+              onMouseDown={(event) => {
+                switchTab?.(tab.id);
+                drag({
+                  opacity: '0',
+                  fixHorizontal: true,
+                })(event);
+              }}
             />
           );
         })}

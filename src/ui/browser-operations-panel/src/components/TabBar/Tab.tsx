@@ -78,7 +78,11 @@ const TabComponent = forwardRef<HTMLDivElement, TabProps>(
                 event.stopPropagation();
                 onClose?.(tab.id);
               }}
+              onMouseDown={(event) => {
+                event.stopPropagation();
+              }}
               className="p-0.5 rounded-full hover:bg-neutral-600"
+              data-drag-drop-draggable="false"
             >
               <IoClose size={14} />
             </button>
