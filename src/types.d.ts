@@ -12,6 +12,10 @@ declare global {
       browserReload: () => Promise<void>;
 
       getTabs: () => Promise<ReturnType<TabService['getTabs']>>;
+      updateTabs: (
+        value: Tab[]
+      ) => Promise<ReturnType<TabService['updateTabs']>>;
+      onUpdateTabs: (callback: (value: Tab[]) => void) => () => void;
       getTabById: (id: string) => Promise<ReturnType<TabService['getTabById']>>;
       createTab: (
         value?: Partial<Tab>

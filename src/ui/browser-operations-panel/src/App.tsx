@@ -71,9 +71,10 @@ function App() {
     setUrl(tab.url);
   };
 
-  const onDrop = (draggingIdx: number, dropIdx: number) => {
-    const newTabs = moveItem(tabs, draggingIdx, dropIdx)
-    setTabs(newTabs)
+  const onDrop = async (draggingIdx: number, dropIdx: number) => {
+    const newTabs = moveItem(tabs, draggingIdx, dropIdx);
+    await window.electronAPI.updateTabs(newTabs);
+    setTabs(newTabs);
   };
 
   const handleUrlChange = (url: string) => {
@@ -121,8 +122,14 @@ function App() {
       }
     );
 
+    const destroyOnUpdateTabs = window.electronAPI.onUpdateTabs((newTabs) => {
+      console.log('-- onUpdateTabs ----');
+      setTabs(() => newTabs);
+    });
+
     return () => {
       destroyOnUpdateTabById();
+      destroyOnUpdateTabs();
     };
   }, []);
 

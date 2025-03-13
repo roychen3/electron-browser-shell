@@ -12,6 +12,17 @@ export class TabManager implements TabService {
     return this._tabs;
   }
 
+  updateTabs(value: Tab[]) {
+    this._emitter.emit('onUpdateTabs', value);
+    this._tabs = value;
+    return this._tabs;
+  }
+
+  onUpdateTabs(listener: (newTab: Tab[]) => void): () => void {
+    this._emitter.on('onUpdateTabs', listener);
+    return () => this._emitter.removeListener('onUpdateTabs', listener);
+  }
+
   getTabById(id: string) {
     return this._tabs.find((tab) => tab.id === id) || null;
   }
