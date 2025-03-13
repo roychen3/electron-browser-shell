@@ -17,19 +17,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   browserReload: () => ipcRenderer.invoke('browser-reload'),
 
   getTabs: () => ipcRenderer.invoke('get-tabs'),
-  updateTabs: (value) => ipcRenderer.invoke('update-tabs', value),
-  onUpdateTabs: (callback) => {
+  setTabs: (value) => ipcRenderer.invoke('set-tabs', value),
+  onSetTabs: (callback) => {
     const listener = (
       _event: any,
       value: Tab[]
     ) => callback(value);
-    ipcRenderer.on('update-tabs', listener);
-    return () => ipcRenderer.removeListener('update-tabs', listener);
+    ipcRenderer.on('set-tabs', listener);
+    return () => ipcRenderer.removeListener('set-tabs', listener);
   },
   getTabById: (id) => ipcRenderer.invoke('get-tab-by-id', id),
   createTab: (value) => ipcRenderer.invoke('create-tab', value),
-  updateTabById: (value) => ipcRenderer.invoke('update-tab-by-id', value),
-  onUpdateTabById: (callback) => {
+  setTabById: (value) => ipcRenderer.invoke('set-tab-by-id', value),
+  onSetTabById: (callback) => {
     const listener = (
       _event: any,
       arg: {
@@ -37,13 +37,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
         oldValue: Tab;
       }
     ) => callback(arg);
-    ipcRenderer.on('update-tab-by-id', listener);
-    return () => ipcRenderer.removeListener('update-tab-by-id', listener);
+    ipcRenderer.on('set-tab-by-id', listener);
+    return () => ipcRenderer.removeListener('set-tab-by-id', listener);
   },
   deleteTabById: (id) => ipcRenderer.invoke('delete-tab-by-id', id),
   getActiveTabId: () => ipcRenderer.invoke('get-active-tab-id'),
   setActiveTabId: (id) => ipcRenderer.invoke('set-active-tab-id', id),
   getActiveTab: () => ipcRenderer.invoke('get-active-tab'),
+  onSetActiveTabId: (callback) => {
+    const listener = (_event: any, id: string) => callback(id);
+    ipcRenderer.on('set-active-tab-id', listener);
+    return () => ipcRenderer.removeListener('set-active-tab-id', listener);
+  },
+
   getOwnTabId: () => getProcessArgvValue('tab-id'),
 
   openAvatarMenuPopup: (options) =>

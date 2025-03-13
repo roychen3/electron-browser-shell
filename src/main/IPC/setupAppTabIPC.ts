@@ -10,10 +10,10 @@ export function setupAppTabIPC(tabService: TabService) {
     return result;
   });
 
-  ipcMain.removeHandler('update-tabs');
-  ipcMain.handle('update-tabs', (_, value: Tab[]) => {
-    console.log('-- ipcMain.handle(update-tabs) ----', value);
-    const result = tabService.updateTabs(value);
+  ipcMain.removeHandler('set-tabs');
+  ipcMain.handle('set-tabs', (_, value: Tab[]) => {
+    console.log('-- ipcMain.handle(set-tabs) ----', value);
+    const result = tabService.setTabs(value);
     return result;
   });
 
@@ -31,12 +31,12 @@ export function setupAppTabIPC(tabService: TabService) {
     return result;
   });
 
-  ipcMain.removeHandler('update-tab-by-id');
+  ipcMain.removeHandler('set-tab-by-id');
   ipcMain.handle(
-    'update-tab-by-id',
+    'set-tab-by-id',
     async (_, data: { id: string; value: Partial<Tab> }) => {
-      console.log('-- ipcMain.handle(update-tab-by-id) ----', data);
-      const result = tabService.updateTabById(data.id, data.value);
+      console.log('-- ipcMain.handle(set-tab-by-id) ----', data);
+      const result = tabService.setTabById(data.id, data.value);
       return result;
     }
   );

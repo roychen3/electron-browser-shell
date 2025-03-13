@@ -129,7 +129,7 @@ function createWindow(
     });
 
     const onUpdateUrl = (url: string) => {
-      tabManager.updateTabById(tab.id, { url });
+      tabManager.setTabById(tab.id, { url });
     };
     // Subscribe to browser content view's navigation events
     newBrowserContentView.webContents.on('did-navigate', (_event, url) => {
@@ -147,14 +147,14 @@ function createWindow(
       'page-title-updated',
       (_event, title) => {
         console.log('-- page-title-updated ----');
-        tabManager.updateTabById(tab.id, { title });
+        tabManager.setTabById(tab.id, { title });
       }
     );
     newBrowserContentView.webContents.on(
       'page-favicon-updated',
       (_event, favicon) => {
         console.log('-- page-favicon-updated ----');
-        tabManager.updateTabById(tab.id, { favicon: favicon[0] });
+        tabManager.setTabById(tab.id, { favicon: favicon[0] });
       }
     );
 
@@ -165,16 +165,16 @@ function createWindow(
     browserContentViewsMap.set(tab.id, newBrowserContentView);
   });
 
-  tabManager.onUpdateTabById((args) => {
-    console.log('-- tabManager.onUpdateTabById ----');
+  tabManager.onSetTabById((args) => {
+    console.log('-- tabManager.onSetTabById ----');
     console.log('---- newValue.url:', args.newValue.url);
     console.log('---- oldValue.url:', args.oldValue?.url);
     const browserContentView = browserContentViewsMap.get(args.newValue.id);
     if (!browserContentView) {
       throw new Error('browser content view not found');
     }
-    browserContentView.webContents.send('update-tab-by-id', args);
-    browserOperationsPanelView.webContents.send('update-tab-by-id', args);
+    browserContentView.webContents.send('set-tab-by-id', args);
+    browserOperationsPanelView.webContents.send('set-tab-by-id', args);
   });
 
   tabManager.onDeleteTabById((id) => {
@@ -209,12 +209,13 @@ function createWindow(
           }
         }
       });
+      browserOperationsPanelView.webContents.send('set-active-tab-id', newId);
     }
   });
 
-  tabManager.onUpdateTabs((tabs) => {
-    console.log('-- tabManager.onUpdateTabs ----');
-    browserOperationsPanelView.webContents.send('update-tabs', tabs);
+  tabManager.onSetTabs((tabs) => {
+    console.log('-- tabManager.onSetTabs ----');
+    browserOperationsPanelView.webContents.send('set-tabs', tabs);
   });
 
   // create default tab first
