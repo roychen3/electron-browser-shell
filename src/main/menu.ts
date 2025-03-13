@@ -25,6 +25,8 @@ export function createApplicationMenu(
   const localDeveloperMenu = menu.items.find(
     (item) => item.label === 'Local Developer'
   );
+  const TOGGLE_BROWSER_OPERATIONS_PANEL_DEVTOOLS_LABEL =
+    'Toggle Browser Operations Panel DevTools';
   if (!localDeveloperMenu) {
     template = Menu.buildFromTemplate([
       ...menu.items,
@@ -35,12 +37,21 @@ export function createApplicationMenu(
           {
             click: () =>
               browserOperationsPanelView.webContents.toggleDevTools(),
-            label: 'Toggle Browser Shell DevTools',
+            label: TOGGLE_BROWSER_OPERATIONS_PANEL_DEVTOOLS_LABEL,
             accelerator: 'CmdOrCtrl+Shift+p',
           },
         ],
       },
     ]);
+  } else if (localDeveloperMenu.submenu) {
+    const toggleBrowserOperationsPanelDevToolsItem =
+      localDeveloperMenu.submenu.items.find(
+        (item) => item.label === TOGGLE_BROWSER_OPERATIONS_PANEL_DEVTOOLS_LABEL
+      );
+    if (toggleBrowserOperationsPanelDevToolsItem) {
+      toggleBrowserOperationsPanelDevToolsItem.click = () =>
+        browserOperationsPanelView.webContents.toggleDevTools();
+    }
   }
   Menu.setApplicationMenu(template);
 }

@@ -29,7 +29,6 @@ import {
 } from './IPC';
 import { PopupName } from './IPC/setupAppPopupIPC';
 
-
 // 在應用啟動前註冊自訂協議
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true } },
@@ -230,6 +229,13 @@ function createWindow(
     updateShellViewBounds();
     updateBrowserContentViewBounds(getActiveBrowserContentView());
   });
+  mainWindow.once('close', () => {
+    browserOperationsPanelView.webContents.close();
+    browserContentViewsMap.forEach((browserContentView) => {
+      browserContentView.webContents.close();
+    });
+    browserContentViewsMap.clear();
+  });
 
   mainWindow.contentView.addChildView(browserOperationsPanelView);
 
@@ -250,7 +256,9 @@ app.whenReady().then(() => {
     try {
       const pathnameSlices = uUrl.pathname.split('/');
       const lastPathnameSlice = pathnameSlices[pathnameSlices.length - 1];
-      const pathname = isFilenameWithExtension(lastPathnameSlice) ? uUrl.pathname : 'index.html'
+      const pathname = isFilenameWithExtension(lastPathnameSlice)
+        ? uUrl.pathname
+        : 'index.html';
       const appPath = getAppUiPath(`${appName}/${pathname}`);
       return await net.fetch(`file://${appPath}`);
     } catch (error) {
