@@ -12,43 +12,25 @@ export class TabManager implements TabService {
     return this._tabs;
   }
 
-  updateTabs(value: Tab[]) {
-    this._emitter.emit('onUpdateTabs', value);
+  setTabs(value: Tab[]) {
     this._tabs = value;
+    this._emitter.emit('onSetTabs', value);
     return this._tabs;
   }
 
-  onUpdateTabs(listener: (newTab: Tab[]) => void): () => void {
-    this._emitter.on('onUpdateTabs', listener);
-    return () => this._emitter.removeListener('onUpdateTabs', listener);
+  onSetTabs(listener: (newTab: Tab[]) => void) {
+    this._emitter.on('onSetTabs', listener);
+    return () => this._emitter.removeListener('onSetTabs', listener);
   }
 
   getTabById(id: string) {
     return this._tabs.find((tab) => tab.id === id) || null;
   }
 
-  createTab(value?: Partial<Tab>): ReturnType<TabService['createTab']> {
-    const newTab: Tab = {
-      id: Date.now().toString(),
-      title: 'New Tab',
-      ...value,
-      url: value?.url ? new URL(value.url).href : '',
-    };
-    this._emitter.emit('onCreateTab', newTab);
-
-    this._tabs.push(newTab);
-    return [newTab, this._tabs];
-  }
-
-  onCreateTab(listener: (newTab: Tab) => void) {
-    this._emitter.on('onCreateTab', listener);
-    return () => this._emitter.removeListener('onCreateTab', listener);
-  }
-
-  updateTabById(
+  setTabById(
     id: string,
     value: Partial<Tab>
-  ): ReturnType<TabService['updateTabById']> {
+  ): ReturnType<TabService['setTabById']> {
     let targetTab = this._tabs.find((tab) => tab.id === id);
     if (!targetTab) {
       throw new Error('Target tab not found');
@@ -65,27 +47,43 @@ export class TabManager implements TabService {
       }
       return tab;
     });
-    this._emitter.emit('onUpdateTabById', {
+
+    this.setTabs(newTabs);
+    this._emitter.emit('onSetTabById', {
       newValue: newTab,
       oldValue: oldTab,
     });
-
-    this._tabs = newTabs;
     return [newTab, newTabs];
   }
 
-  onUpdateTabById(
+  onSetTabById(
     listener: (args: { newValue: Tab; oldValue: Tab | null }) => void
   ) {
-    this._emitter.on('onUpdateTabById', listener);
-    return () => this._emitter.removeListener('onUpdateTabById', listener);
+    this._emitter.on('onSetTabById', listener);
+    return () => this._emitter.removeListener('onSetTabById', listener);
+  }
+
+  createTab(value?: Partial<Tab>): ReturnType<TabService['createTab']> {
+    const newTab: Tab = {
+      id: Date.now().toString(),
+      title: 'New Tab',
+      ...value,
+      url: value?.url ? new URL(value.url).href : '',
+    };
+    this.setTabs([...this._tabs, newTab]);
+    this._emitter.emit('onCreateTab', newTab);
+    return [newTab, this._tabs];
+  }
+
+  onCreateTab(listener: (newTab: Tab) => void) {
+    this._emitter.on('onCreateTab', listener);
+    return () => this._emitter.removeListener('onCreateTab', listener);
   }
 
   deleteTabById(id: string) {
     const newTabs = this._tabs.filter((tab) => tab.id !== id);
+    this.setTabs(newTabs);
     this._emitter.emit('onDeleteTabById', id);
-
-    this._tabs = newTabs;
     return newTabs;
   }
 
@@ -100,9 +98,8 @@ export class TabManager implements TabService {
 
   setActiveTabId(id: string) {
     const prev = this._activeTabId;
-    this._emitter.emit('onSetActiveTabId', { newId: id, prevId: prev });
-
     this._activeTabId = id;
+    this._emitter.emit('onSetActiveTabId', { newId: id, prevId: prev });
   }
 
   onSetActiveTabId(

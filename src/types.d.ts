@@ -12,21 +12,19 @@ declare global {
       browserReload: () => Promise<void>;
 
       getTabs: () => Promise<ReturnType<TabService['getTabs']>>;
-      updateTabs: (
-        value: Tab[]
-      ) => Promise<ReturnType<TabService['updateTabs']>>;
-      onUpdateTabs: (callback: (value: Tab[]) => void) => () => void;
+      setTabs: (value: Tab[]) => Promise<ReturnType<TabService['setTabs']>>;
+      onSetTabs: (callback: (value: Tab[]) => void) => () => void;
       getTabById: (id: string) => Promise<ReturnType<TabService['getTabById']>>;
+      setTabById: (value: {
+        id: string;
+        value: Partial<Tab>;
+      }) => Promise<ReturnType<TabService['setTabById']>>;
+      onSetTabById: (
+        callback: (args: { newValue: Tab; oldValue: Tab }) => void
+      ) => () => void;
       createTab: (
         value?: Partial<Tab>
       ) => Promise<ReturnType<TabService['createTab']>>;
-      updateTabById: (value: {
-        id: string;
-        value: Partial<Tab>;
-      }) => Promise<ReturnType<TabService['updateTabById']>>;
-      onUpdateTabById: (
-        callback: (args: { newValue: Tab; oldValue: Tab }) => void
-      ) => () => void;
       deleteTabById: (
         id: string
       ) => Promise<ReturnType<TabService['deleteTabById']>>;
@@ -34,6 +32,7 @@ declare global {
       setActiveTabId: (
         id: string
       ) => Promise<ReturnType<TabService['setActiveTabId']>>;
+      onSetActiveTabId: (callback: (id: string) => void) => () => void;
       getActiveTab: () => Promise<ReturnType<TabService['getActiveTab']>>;
       getOwnTabId: () => string | null;
 

@@ -1,12 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TabBar, NavigationBar, Avatar } from './components';
-
-interface Tab {
-  id: string;
-  url: string;
-  title: string;
-}
+import { useTabs } from './components/TabBar/useTabs';
+import { Tab } from './components/TabBar/types';
 
 const moveItem = (arr: Tab[], itemIdx: number, toIdx: number) => {
   const startIdx = 0;
@@ -27,8 +23,7 @@ const moveItem = (arr: Tab[], itemIdx: number, toIdx: number) => {
 };
 
 function App() {
-  const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTabId, setActiveTabId] = useState('1');
+  const { tabs, activeTab } = useTabs();
   const [url, setUrl] = useState('');
 
   const addNewTab = async () => {
@@ -37,17 +32,15 @@ function App() {
         ? 'app://authenticator/sign-in'
         : 'http://localhost:3000/sign-in',
     });
-    const [newTab, tabs] = data;
+    const [newTab] = data;
     await window.electronAPI.setActiveTabId(newTab.id);
-    setTabs(tabs);
-    setActiveTabId(newTab.id);
     setUrl(newTab.url);
   };
 
   const closeTab = async (tabId: string) => {
     const newTabs = await window.electronAPI.deleteTabById(tabId);
 
-    if (tabId === activeTabId) {
+    if (tabId === activeTab.id) {
       const newActiveTabId = newTabs[newTabs.length - 1].id;
       await window.electronAPI.setActiveTabId(newActiveTabId);
 
@@ -55,26 +48,22 @@ function App() {
       if (!activeTab) {
         throw new Error('Active tab not found');
       }
-      setActiveTabId(newActiveTabId);
       setUrl(activeTab.url);
     }
-    setTabs(newTabs);
   };
 
   const switchTab = async (tabId: string) => {
     await window.electronAPI.setActiveTabId(tabId);
-    const tab = await window.electronAPI.getTabById(tabId);
+    const tab = tabs.find((tab) => tab.id === tabId);
     if (!tab) {
       throw new Error('Active tab not found');
     }
-    setActiveTabId(tabId);
     setUrl(tab.url);
   };
 
   const onDrop = async (draggingIdx: number, dropIdx: number) => {
     const newTabs = moveItem(tabs, draggingIdx, dropIdx);
-    await window.electronAPI.updateTabs(newTabs);
-    setTabs(newTabs);
+    await window.electronAPI.setTabs(newTabs);
   };
 
   const handleUrlChange = (url: string) => {
@@ -98,38 +87,21 @@ function App() {
   };
 
   useEffect(() => {
-    const setInitActiveId = async () => {
-      console.log('-- setInitActiveId ----');
-      const [tabs, activeTab] = await Promise.all([
-        window.electronAPI.getTabs(),
-        window.electronAPI.getActiveTab(),
-      ]);
-      setTabs(tabs || []);
-      setActiveTabId(activeTab?.id || '');
-      setUrl(activeTab?.url || '');
+    const initUrl = async () => {
+      const tab = await window.electronAPI.getActiveTab();
+      setUrl(() => tab?.url || '');
     };
-    setInitActiveId();
-
-    const destroyOnUpdateTabById = window.electronAPI.onUpdateTabById(
+    initUrl();
+  }, []);
+  useEffect(() => {
+    const destroyOnUpdateTabById = window.electronAPI.onSetTabById(
       ({ newValue }) => {
-        console.log('-- onUpdateTabById ----');
-        setTabs((prevTabs) => {
-          return prevTabs.map((tab) =>
-            tab.id === newValue.id ? newValue : tab
-          );
-        });
+        console.log('-- onSetTabById ----');
         setUrl(newValue.url);
       }
     );
-
-    const destroyOnUpdateTabs = window.electronAPI.onUpdateTabs((newTabs) => {
-      console.log('-- onUpdateTabs ----');
-      setTabs(() => newTabs);
-    });
-
     return () => {
       destroyOnUpdateTabById();
-      destroyOnUpdateTabs();
     };
   }, []);
 
@@ -137,7 +109,7 @@ function App() {
     <div className="flex flex-col bg-neutral-700">
       <TabBar
         tabs={tabs}
-        activeTabId={activeTabId}
+        activeTabId={activeTab.id}
         switchTab={switchTab}
         closeTab={closeTab}
         addNewTab={addNewTab}
