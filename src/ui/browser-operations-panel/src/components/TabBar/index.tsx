@@ -53,7 +53,7 @@ export default function TabBar({
               onMouseDown={(event) => {
                 switchTab?.(tab.id);
                 drag({
-                  opacity: '0',
+                  opacity: '50%',
                   fixHorizontal: true,
                 })(event);
               }}

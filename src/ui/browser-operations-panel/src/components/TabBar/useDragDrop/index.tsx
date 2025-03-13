@@ -28,11 +28,11 @@ export const useDragDrop = <T,>({ data }: { data: T[] }) => {
   const draggingRef = useRef<HTMLElement>(null);
 
   const swapItem = (event: MouseEvent) => {
-    if (!draggingRef.current) {
+    if (!draggingRef.current || !targetRef.current) {
       return;
     }
 
-    const targetFromPoint = document.elementFromPoint(
+    const hoveredElement = document.elementFromPoint(
       event.clientX,
       event.clientY
     );
@@ -41,26 +41,48 @@ export const useDragDrop = <T,>({ data }: { data: T[] }) => {
       TARGET_INDEX_ATTRIBUTE
     );
 
-    if (!targetFromPoint || !draggingIdx) {
+    if (!hoveredElement || !draggingIdx) {
       return;
     }
 
     const itemIdx = parseInt(draggingIdx, 10);
     const draggingTagName = draggingRef.current.tagName.toLowerCase();
-    const targetNode = targetFromPoint.closest(
+    const hoveredTargetNode = hoveredElement.closest(
       `${draggingTagName}[${TARGET_INDEX_ATTRIBUTE}]`
+    ) as HTMLElement;
+    if (!hoveredTargetNode) {
+      return;
+    }
+    const hoveredTargetIdx = hoveredTargetNode.getAttribute(
+      TARGET_INDEX_ATTRIBUTE
     );
-    if (!targetNode) {
+    if (!hoveredTargetIdx) {
       return;
     }
-    const targetIdx = targetNode.getAttribute(TARGET_INDEX_ATTRIBUTE);
-    if (!targetIdx) {
-      return;
+    const toIdx = parseInt(hoveredTargetIdx, 10);
+
+    const draggingRect = draggingRef.current.getBoundingClientRect();
+    const draggingMiddleX = draggingRect.left + draggingRect.width / 2;
+    const hoveredTargetRect = hoveredTargetNode.getBoundingClientRect();
+    const hoveredTargetMiddleX =
+      hoveredTargetRect.left + hoveredTargetRect.width / 2;
+    if (
+      draggingRect.left < hoveredTargetMiddleX &&
+      draggingMiddleX > hoveredTargetMiddleX
+    ) {
+      hoveredTargetNode.style.transform = `translateX(+${hoveredTargetRect.width}px)`;
+      targetRef.current.style.transform = `translateX(-${hoveredTargetRect.width}px)`;
+    } else if (
+      draggingRect.right > hoveredTargetMiddleX &&
+      draggingMiddleX < hoveredTargetMiddleX
+    ) {
+      hoveredTargetNode.style.transform = `translateX(-${hoveredTargetRect.width}px)`;
+      targetRef.current.style.transform = `translateX(+${hoveredTargetRect.width}px)`;
     }
-    const toIdx = parseInt(targetIdx, 10);
+
     if (itemIdx !== toIdx) {
       draggingRef.current.setAttribute(TARGET_INDEX_ATTRIBUTE, `${toIdx}`);
-      setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
+      // setDragDropData((preValues) => moveItem(preValues, itemIdx, toIdx));
     }
   };
 
