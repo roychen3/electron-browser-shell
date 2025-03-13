@@ -212,6 +212,11 @@ function createWindow(
     }
   });
 
+  tabManager.onUpdateTabs((tabs) => {
+    console.log('-- tabManager.onUpdateTabs ----');
+    browserOperationsPanelView.webContents.send('update-tabs', tabs);
+  });
+
   // create default tab first
   const DEFAULT_TAB_ID = 'default-open-tab-id';
   const DEFAULT_URL = app.isPackaged

@@ -10,6 +10,13 @@ export function setupAppTabIPC(tabService: TabService) {
     return result;
   });
 
+  ipcMain.removeHandler('update-tabs');
+  ipcMain.handle('update-tabs', (_, value: Tab[]) => {
+    console.log('-- ipcMain.handle(update-tabs) ----', value);
+    const result = tabService.updateTabs(value);
+    return result;
+  });
+
   ipcMain.removeHandler('get-tab-by-id');
   ipcMain.handle('get-tab-by-id', async (_, id: string) => {
     console.log('-- ipcMain.handle(get-tab-by-id) ----', id);

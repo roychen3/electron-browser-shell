@@ -17,6 +17,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   browserReload: () => ipcRenderer.invoke('browser-reload'),
 
   getTabs: () => ipcRenderer.invoke('get-tabs'),
+  updateTabs: (value) => ipcRenderer.invoke('update-tabs', value),
+  onUpdateTabs: (callback) => {
+    const listener = (
+      _event: any,
+      value: Tab[]
+    ) => callback(value);
+    ipcRenderer.on('update-tabs', listener);
+    return () => ipcRenderer.removeListener('update-tabs', listener);
+  },
   getTabById: (id) => ipcRenderer.invoke('get-tab-by-id', id),
   createTab: (value) => ipcRenderer.invoke('create-tab', value),
   updateTabById: (value) => ipcRenderer.invoke('update-tab-by-id', value),
