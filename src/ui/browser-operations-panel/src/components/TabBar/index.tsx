@@ -3,7 +3,8 @@ import { IoAdd } from 'react-icons/io5';
 import TabComponent from './Tab';
 import styles from './TabBar.module.css';
 
-import type { Tab } from './types'
+import type { Tab } from './types';
+import { useState } from 'react';
 
 export interface TabBarProps extends React.RefAttributes<HTMLDivElement> {
   tabs: Tab[];
@@ -11,6 +12,7 @@ export interface TabBarProps extends React.RefAttributes<HTMLDivElement> {
   switchTab?: (id: string) => void;
   closeTab?: (id: string) => void;
   addNewTab?: () => void;
+  onDrop?: (draggingIdx: number, dropIdx: number) => void;
 }
 
 export default function TabBar({
@@ -19,10 +21,12 @@ export default function TabBar({
   switchTab,
   closeTab,
   addNewTab,
+  onDrop,
 }: TabBarProps) {
   const isMacOS = window.electronAPI.isMacOS();
   const barPadding = isMacOS ? 'pl-20 pr-10' : 'pl-10 pr-50';
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+  const [draggingId, setDraggingId] = useState(-1);
 
   return (
     <div
@@ -45,8 +49,14 @@ export default function TabBar({
               className={dividerClasses}
               tab={tab}
               isActive={isActive}
-              onClick={(id) => switchTab?.(id)}
               onClose={(id) => closeTab?.(id)}
+              onDragStart={() => {
+                setDraggingId(tabIndex);
+              }}
+              onDrop={() => onDrop?.(draggingId, tabIndex)}
+              onMouseDown={() => {
+                switchTab?.(tab.id);
+              }}
             />
           );
         })}

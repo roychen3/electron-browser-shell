@@ -8,6 +8,24 @@ interface Tab {
   title: string;
 }
 
+const moveItem = (arr: Tab[], itemIdx: number, toIdx: number) => {
+  const startIdx = 0;
+  const endIdx = arr.length - 1;
+  const data = [...arr];
+  const item = data.splice(itemIdx, 1)[0];
+
+  if (itemIdx === 0 && itemIdx > toIdx) {
+    data.splice(endIdx, 0, item);
+    return data;
+  } else if (itemIdx === endIdx && itemIdx < toIdx) {
+    data.splice(startIdx, 0, item);
+    return data;
+  } else {
+    data.splice(toIdx, 0, item);
+    return data;
+  }
+};
+
 function App() {
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState('1');
@@ -51,6 +69,11 @@ function App() {
     }
     setActiveTabId(tabId);
     setUrl(tab.url);
+  };
+
+  const onDrop = (draggingIdx: number, dropIdx: number) => {
+    const newTabs = moveItem(tabs, draggingIdx, dropIdx)
+    setTabs(newTabs)
   };
 
   const handleUrlChange = (url: string) => {
@@ -111,6 +134,7 @@ function App() {
         switchTab={switchTab}
         closeTab={closeTab}
         addNewTab={addNewTab}
+        onDrop={onDrop}
       />
       <div className="flex items-center pr-2">
         <NavigationBar
