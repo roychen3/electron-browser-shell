@@ -38,10 +38,11 @@ const TabComponent = forwardRef<HTMLDivElement, TabProps>(
     const innerRef = useRef<HTMLDivElement>(null);
     const [showCloseWithSize, setShowCloseWithSize] = useState(false);
 
-    const handleDragStart = () => {
+    const handleDragStart = (event: React.DragEvent<HTMLElement>) => {
       if (!innerRef.current) {
         return;
       }
+      event.dataTransfer.effectAllowed = 'move';
       onDragStart?.(tab.id);
       setTimeout(() => {
         innerRef.current!.style.visibility = 'hidden';
@@ -53,7 +54,14 @@ const TabComponent = forwardRef<HTMLDivElement, TabProps>(
       }
       innerRef.current.style.visibility = 'visible';
     };
+    const handleDragEnter = (event: React.DragEvent<HTMLElement>) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    };
     const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
+      event.preventDefault();
+    };
+    const handleDragLeave = (event: React.DragEvent<HTMLElement>) => {
       event.preventDefault();
     };
     const handleDragDrop = (event: React.DragEvent<HTMLElement>) => {
@@ -102,14 +110,20 @@ const TabComponent = forwardRef<HTMLDivElement, TabProps>(
         draggable
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={handleDragDrop}
         {...props}
       >
         <div className={`flex items-center overflow-hidden`}>
           <div className={`flex-1 flex items-center gap-2 overflow-hidden`}>
             <div className="shrink-0">
-              <img className="size-[18px]" src={tab.favicon} />
+              <img
+                draggable={false}
+                className="size-[18px]"
+                src={tab.favicon}
+              />
             </div>
             <span className={`text-sm text-nowrap`}>
               {tab.title || 'New Tab'}
