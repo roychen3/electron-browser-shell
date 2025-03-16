@@ -162,6 +162,17 @@ function createWindow(
     mainWindow.contentView.addChildView(newBrowserContentView);
     updateBrowserContentViewBounds(newBrowserContentView);
     browserContentViewsMap.set(tab.id, newBrowserContentView);
+
+    // Using https://www.youtube.com/watch?v=5goJwZajCF4 test video will not interrupt.
+    setTimeout(() => {
+      const main2Window = new BrowserWindow({
+        webPreferences: {
+          preload: getBrowserOperatorPreloadPath(),
+          additionalArguments: [`--tab-id=${tab.id}`],
+        },
+      });
+      main2Window.setContentView(newBrowserContentView);
+    }, 10 * 1000);
   });
 
   tabManager.onSetTabById((args) => {
