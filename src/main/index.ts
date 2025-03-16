@@ -40,8 +40,8 @@ function createWindow(
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    frame: false,
-    titleBarStyle: 'hidden',
+    // frame: false,
+    // titleBarStyle: 'hidden',
     ...(isMac()
       ? {}
       : {
@@ -239,10 +239,20 @@ function createWindow(
 
   mainWindow.contentView.addChildView(browserOperationsPanelView);
 
-  createApplicationMenu(
-    browserOperationsPanelView,
-    getActiveBrowserContentView
-  );
+  createApplicationMenu({
+    onNewTab: () => {
+      tabManager.createTab({
+        url: DEFAULT_URL,
+      });
+    },
+    onToggleDeveloperTools: () => {
+      const currentBrowserContentView = getActiveBrowserContentView();
+      currentBrowserContentView.webContents.toggleDevTools();
+    },
+    onToggleBrowserOperationsPanelDevTools: () => {
+      browserOperationsPanelView.webContents.toggleDevTools();
+    },
+  });
 }
 
 app.whenReady().then(() => {
